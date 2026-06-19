@@ -1,7 +1,7 @@
 export interface Finca {
   id: string;
   nombre: string;
-  REGA: string;
+  rega: string;
   direccion: string | null;
   municipio: string | null;
   provincia: string | null;

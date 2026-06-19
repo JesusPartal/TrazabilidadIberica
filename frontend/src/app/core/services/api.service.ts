@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
 import type { Animal } from '../models/animal';
 import type { Finca } from '../models/finca';
+import type { Lote } from '../models/lote';
+import type { MovimientoAnimal } from '../models/movimiento-animal';
 import type { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth';
 import type { PagedList } from '../models/paged-list';
 import type { SyncQueueItem, SyncResponse } from '../models/sync';
@@ -66,6 +68,53 @@ export class ApiService {
 
   deleteFinca(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/fincas/${id}`);
+  }
+
+  // Lotes
+  getLotes(fincaId?: string, page = 1, pageSize = 50): Observable<PagedList<Lote>> {
+    const params: Record<string, string | number> = { page, pageSize };
+    if (fincaId) params['fincaId'] = fincaId;
+    return this.http.get<PagedList<Lote>>(`${this.baseUrl}/lotes`, { params });
+  }
+
+  getLote(id: string): Observable<Lote> {
+    return this.http.get<Lote>(`${this.baseUrl}/lotes/${id}`);
+  }
+
+  createLote(lote: Partial<Lote>): Observable<string> {
+    return this.http.post<string>(`${this.baseUrl}/lotes`, lote);
+  }
+
+  updateLote(id: string, lote: Partial<Lote>): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/lotes/${id}`, { ...lote, id });
+  }
+
+  deleteLote(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/lotes/${id}`);
+  }
+
+  // Movimientos Animal
+  getMovimientos(animalId?: string, fincaId?: string, page = 1, pageSize = 50): Observable<PagedList<MovimientoAnimal>> {
+    const params: Record<string, string | number> = { page, pageSize };
+    if (animalId) params['animalId'] = animalId;
+    if (fincaId) params['fincaId'] = fincaId;
+    return this.http.get<PagedList<MovimientoAnimal>>(`${this.baseUrl}/movimientosanimal`, { params });
+  }
+
+  getMovimiento(id: string): Observable<MovimientoAnimal> {
+    return this.http.get<MovimientoAnimal>(`${this.baseUrl}/movimientosanimal/${id}`);
+  }
+
+  createMovimiento(movimiento: Partial<MovimientoAnimal>): Observable<string> {
+    return this.http.post<string>(`${this.baseUrl}/movimientosanimal`, movimiento);
+  }
+
+  updateMovimiento(id: string, movimiento: Partial<MovimientoAnimal>): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/movimientosanimal/${id}`, { ...movimiento, id });
+  }
+
+  deleteMovimiento(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/movimientosanimal/${id}`);
   }
 
   // Sync

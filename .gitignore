@@ -24,3 +24,5 @@ publish/
 publish2/
 publish3/
 *.zip
+
+.vercel

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TrazabilidadIberica.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TrazabilidadIberica.Infrastructure.Data;
 namespace TrazabilidadIberica.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619132330_AddIdentityUserIdAndAuditFields")]
+    partial class AddIdentityUserIdAndAuditFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,7 +265,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("PesoNacimientoKg")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("PorcentajeIberico")
@@ -339,10 +341,8 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Accion")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Accion")
+                        .HasColumnType("int");
 
                     b.Property<string>("ClientId")
                         .HasColumnType("nvarchar(max)");
@@ -364,8 +364,7 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
 
                     b.Property<string>("Entidad")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("EntidadId")
                         .HasColumnType("uniqueidentifier");
@@ -393,8 +392,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Entidad", "EntidadId", "Version");
-
                     b.ToTable("AuditoriaRegistros");
                 });
 
@@ -407,10 +404,8 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                     b.Property<Guid>("AnimalId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Causa")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Causa")
+                        .HasColumnType("int");
 
                     b.Property<string>("ClientId")
                         .HasColumnType("nvarchar(max)");
@@ -425,19 +420,16 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Destino")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("FechaBaja")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NumGuiaAsociada")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -470,10 +462,8 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("EstadoCampania")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("EstadoCampania")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("FechaFin")
                         .HasColumnType("datetime2");
@@ -485,12 +475,10 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("HectareasUtilizadas")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("NumAutorizacionDO")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Temporada")
                         .HasColumnType("int");
@@ -524,48 +512,39 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Descripcion")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("EntidadId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NombreArchivo")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumeroReferencia")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("TamanioBytes")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("TipoDocumento")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("TipoDocumento")
+                        .HasColumnType("int");
 
                     b.Property<string>("TipoEntidad")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TipoMime")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UrlLocal")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UrlServidor")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -584,10 +563,8 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                     b.Property<bool>("AptoDO")
                         .HasColumnType("bit");
 
-                    b.Property<string>("CalificacionDOP")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("CalificacionDOP")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("CampaniaMontaneraId")
                         .HasColumnType("uniqueidentifier");
@@ -605,7 +582,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("DiasMontanera")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("FechaEntrada")
@@ -615,19 +591,15 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("IncrementoPesoKg")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("PesoEntradaKg")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("PesoSalidaKg")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -676,11 +648,9 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("HectareasDehesa")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("HectareasMontanera")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Municipio")
@@ -809,26 +779,20 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
 
                     b.Property<string>("NombreInspector")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumActa")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Observaciones")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Resultado")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Resultado")
+                        .HasColumnType("int");
 
                     b.Property<string>("TipoInspeccion")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -892,7 +856,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("PesoMedioKg")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1092,7 +1055,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("CantidadKgDia")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ClientId")
@@ -1117,21 +1079,16 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NombreProducto")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumeroLote")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Proveedor")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TipoAlimentacion")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("TipoAlimentacion")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1165,7 +1122,6 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("DosisAdministrada")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("FechaAdministracion")
@@ -1231,30 +1187,23 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NombreCompleto")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumColegiado")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefono")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NumColegiado")
-                        .IsUnique();
 
                     b.ToTable("Veterinarios");
                 });
@@ -1403,8 +1352,7 @@ namespace TrazabilidadIberica.Infrastructure.Migrations
                 {
                     b.HasOne("TrazabilidadIberica.Domain.Entities.CampaniaMontanera", "CampaniaMontanera")
                         .WithMany()
-                        .HasForeignKey("CampaniaMontaneraId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("CampaniaMontaneraId");
 
                     b.HasOne("TrazabilidadIberica.Domain.Entities.Finca", "Finca")
                         .WithMany("InspeccionesDOP")

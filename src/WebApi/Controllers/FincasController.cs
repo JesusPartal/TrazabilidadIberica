@@ -42,4 +42,34 @@ public class FincasController : ControllerBase
         var id = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetById), new { id }, id);
     }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFincaCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("El id del path no coincide con el del body");
+        try
+        {
+            await _mediator.Send(command);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            await _mediator.Send(new DeleteFincaCommand(id));
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+    }
 }

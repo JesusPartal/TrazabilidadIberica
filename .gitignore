@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+.DS_Store
+.vs/
+*.DotSettings.user
+
+# Angular
+node_modules/
+dist/
+*.js.map
+
+# IDE
+.idea/
+*.swp
+*.swo

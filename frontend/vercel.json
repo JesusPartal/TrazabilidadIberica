@@ -1,0 +1,7 @@
+{
+  "outputDirectory": "dist/trazabilidad-iberica/browser",
+  "buildCommand": "npm run build",
+  "devCommand": "npm start",
+  "installCommand": "npm install",
+  "framework": "angular"
+}

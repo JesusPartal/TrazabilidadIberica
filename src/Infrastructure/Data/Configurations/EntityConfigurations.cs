@@ -16,6 +16,8 @@ public class GanaderoConfiguration : IEntityTypeConfiguration<Ganadero>
         builder.Property(e => e.Email).HasMaxLength(100);
         builder.Property(e => e.DireccionCompleta).HasMaxLength(500);
 
+        builder.Property(e => e.IdentityUserId).HasMaxLength(450);
+        builder.HasIndex(e => e.IdentityUserId).IsUnique().HasFilter("[IdentityUserId] IS NOT NULL");
         builder.HasIndex(e => e.NIF).IsUnique();
         builder.HasIndex(e => e.REGA).IsUnique();
     }

@@ -19,9 +19,9 @@ public class FincasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid? ganaderoId)
+    public async Task<IActionResult> GetAll([FromQuery] Guid? ganaderoId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var fincas = await _mediator.Send(new GetFincasQuery(ganaderoId));
+        var fincas = await _mediator.Send(new GetFincasQuery(ganaderoId, page, pageSize));
         return Ok(fincas);
     }
 

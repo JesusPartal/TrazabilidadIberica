@@ -19,9 +19,9 @@ public class AnimalesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var animales = await _mediator.Send(new GetAnimalsQuery());
+        var animales = await _mediator.Send(new GetAnimalsQuery(page, pageSize));
         return Ok(animales);
     }
 

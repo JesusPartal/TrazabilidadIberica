@@ -1,6 +1,6 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TrazabilidadIberica.Application.Auth.Commands;
-using TrazabilidadIberica.Infrastructure.Identity;
 
 namespace TrazabilidadIberica.WebApi.Controllers;
 
@@ -8,23 +8,17 @@ namespace TrazabilidadIberica.WebApi.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IIdentityService _identityService;
+    private readonly IMediator _mediator;
 
-    public AuthController(IIdentityService identityService)
+    public AuthController(IMediator mediator)
     {
-        _identityService = identityService;
+        _mediator = mediator;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
-        var result = await _identityService.RegisterAsync(
-            command.Email,
-            command.Password,
-            command.NombreRazonSocial,
-            command.NIF,
-            command.REGA,
-            command.Role);
+        var result = await _mediator.Send(command);
 
         if (!result.Success)
             return BadRequest(new { errors = result.Errors });
@@ -35,7 +29,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        var result = await _identityService.LoginAsync(command.Email, command.Password);
+        var result = await _mediator.Send(command);
 
         if (!result.Success)
             return Unauthorized(new { errors = result.Errors });

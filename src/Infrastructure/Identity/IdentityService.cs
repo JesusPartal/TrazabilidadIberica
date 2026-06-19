@@ -5,32 +5,32 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TrazabilidadIberica.Application.Auth.Commands;
+using TrazabilidadIberica.Application.Common.Interfaces;
+using TrazabilidadIberica.Domain.Entities;
 
 namespace TrazabilidadIberica.Infrastructure.Identity;
-
-public interface IIdentityService
-{
-    Task<AuthResult> RegisterAsync(string email, string password, string nombre, string nif, string rega, string role);
-    Task<AuthResult> LoginAsync(string email, string password);
-}
 
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
+    private readonly IApplicationDbContext _context;
+    private const string DefaultRole = "Ganadero";
 
     public IdentityService(
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IApplicationDbContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _configuration = configuration;
+        _context = context;
     }
 
-    public async Task<AuthResult> RegisterAsync(string email, string password, string nombre, string nif, string rega, string role)
+    public async Task<AuthResult> RegisterAsync(string email, string password, string nombreRazonSocial, string nif, string rega, CancellationToken cancellationToken)
     {
         var user = new IdentityUser
         {
@@ -43,12 +43,24 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded)
             return new AuthResult(false, null, null, null, result.Errors.Select(e => e.Description).ToArray());
 
-        if (!await _roleManager.RoleExistsAsync(role))
-            await _roleManager.CreateAsync(new IdentityRole(role));
+        if (!await _roleManager.RoleExistsAsync(DefaultRole))
+            await _roleManager.CreateAsync(new IdentityRole(DefaultRole));
 
-        await _userManager.AddToRoleAsync(user, role);
+        await _userManager.AddToRoleAsync(user, DefaultRole);
 
-        var token = GenerateJwtToken(user, role);
+        var ganadero = new Ganadero
+        {
+            NombreRazonSocial = nombreRazonSocial,
+            NIF = nif,
+            REGA = rega,
+            Email = email,
+            IdentityUserId = user.Id
+        };
+
+        _context.Ganaderos.Add(ganadero);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var token = GenerateJwtToken(user, DefaultRole);
         var refreshToken = GenerateRefreshToken();
 
         return new AuthResult(true, token, refreshToken, user.Id, null);
@@ -61,8 +73,7 @@ public class IdentityService : IIdentityService
         if (user is null || !await _userManager.CheckPasswordAsync(user, password))
             return new AuthResult(false, null, null, null, new[] { "Credenciales inválidas" });
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "Ganadero";
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? DefaultRole;
 
         var token = GenerateJwtToken(user, role);
         var refreshToken = GenerateRefreshToken();

@@ -1,6 +1,5 @@
 using MediatR;
 using TrazabilidadIberica.Application.Common.Interfaces;
-using TrazabilidadIberica.Domain.Enums;
 
 namespace TrazabilidadIberica.Application.Animals.Commands;
 
@@ -23,7 +22,6 @@ public class DeleteAnimalCommandHandler : IRequestHandler<DeleteAnimalCommand>
             throw new KeyNotFoundException($"Animal {request.Id} no encontrado");
 
         animal.DeletedAt = DateTime.UtcNow;
-        animal.EstadoActual = EstadoAnimal.Perdido;
         animal.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);

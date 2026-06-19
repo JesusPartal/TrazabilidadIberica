@@ -1,6 +1,5 @@
 using FluentAssertions;
 using TrazabilidadIberica.Application.Animals.Commands;
-using TrazabilidadIberica.Domain.Enums;
 
 namespace TrazabilidadIberica.Application.Tests.Animals.Commands;
 
@@ -21,7 +20,6 @@ public class DeleteAnimalCommandTests : TestBase
 
         var deleted = await context.Animales.FindAsync(animal.Id);
         deleted!.DeletedAt.Should().NotBeNull();
-        deleted.EstadoActual.Should().Be(EstadoAnimal.Perdido);
     }
 
     [Fact]

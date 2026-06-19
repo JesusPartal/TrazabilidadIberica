@@ -1,12 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TrazabilidadIberica.Application.Common.Interfaces;
+using TrazabilidadIberica.Application.Common.Models;
 using TrazabilidadIberica.Domain.Entities;
 
 namespace TrazabilidadIberica.Application.Fincas.Queries;
 
 public record GetFincaQuery(Guid Id) : IRequest<Finca?>;
-public record GetFincasQuery(Guid? GanaderoId = null) : IRequest<List<Finca>>;
+public record GetFincasQuery(Guid? GanaderoId = null, int Page = 1, int PageSize = 50) : IRequest<PagedList<Finca>>;
 
 public class GetFincaQueryHandler : IRequestHandler<GetFincaQuery, Finca?>
 {
@@ -25,7 +26,7 @@ public class GetFincaQueryHandler : IRequestHandler<GetFincaQuery, Finca?>
     }
 }
 
-public class GetFincasQueryHandler : IRequestHandler<GetFincasQuery, List<Finca>>
+public class GetFincasQueryHandler : IRequestHandler<GetFincasQuery, PagedList<Finca>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -34,7 +35,7 @@ public class GetFincasQueryHandler : IRequestHandler<GetFincasQuery, List<Finca>
         _context = context;
     }
 
-    public async Task<List<Finca>> Handle(GetFincasQuery request, CancellationToken cancellationToken)
+    public async Task<PagedList<Finca>> Handle(GetFincasQuery request, CancellationToken cancellationToken)
     {
         var query = _context.Fincas
             .Include(f => f.Ganadero)
@@ -43,6 +44,12 @@ public class GetFincasQueryHandler : IRequestHandler<GetFincasQuery, List<Finca>
         if (request.GanaderoId.HasValue)
             query = query.Where(f => f.GanaderoId == request.GanaderoId.Value);
 
-        return await query.ToListAsync(cancellationToken);
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedList<Finca>(items, totalCount, request.Page, request.PageSize);
     }
 }

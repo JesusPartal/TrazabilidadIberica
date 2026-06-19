@@ -72,8 +72,8 @@ public class GetFincaQueryTests : TestBase
         var result = await handler.Handle(
             new GetFincasQuery(GanaderoId: ganadero1.Id), CancellationToken.None);
 
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(finca1.Id);
+        result.Items.Should().HaveCount(1);
+        result.Items[0].Id.Should().Be(finca1.Id);
     }
 
     [Fact]
@@ -93,6 +93,6 @@ public class GetFincaQueryTests : TestBase
         var handler = new GetFincasQueryHandler(ctx);
         var result = await handler.Handle(new GetFincasQuery(), CancellationToken.None);
 
-        result.Should().HaveCount(2);
+        result.Items.Should().HaveCount(2);
     }
 }

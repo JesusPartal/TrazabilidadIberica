@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using TrazabilidadIberica.Application.Animals.Queries;
 
 namespace TrazabilidadIberica.Application.Tests.Animals.Queries;
@@ -67,7 +66,8 @@ public class GetAnimalQueryTests : TestBase
         var handler = new GetAnimalsQueryHandler(context);
         var result = await handler.Handle(new GetAnimalsQuery(), CancellationToken.None);
 
-        result.Should().HaveCount(1);
-        result[0].Id.Should().Be(active.Id);
+        result.Items.Should().HaveCount(1);
+        result.Items[0].Id.Should().Be(active.Id);
+        result.TotalCount.Should().Be(1);
     }
 }

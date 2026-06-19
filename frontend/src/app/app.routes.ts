@@ -12,6 +12,7 @@ export const routes: Routes = [
   },
   {
     path: '',
+    pathMatch: 'full',
     canActivate: [authGuard],
     loadComponent: () => import('./features/dashboard/dashboard.component').then((c) => c.DashboardComponent),
   },

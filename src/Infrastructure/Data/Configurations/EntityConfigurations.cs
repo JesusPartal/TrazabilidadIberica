@@ -240,6 +240,18 @@ public class AnimalLoteHistoricoConfiguration : IEntityTypeConfiguration<AnimalL
     }
 }
 
+public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+{
+    public void Configure(EntityTypeBuilder<RefreshToken> builder)
+    {
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Token).HasMaxLength(500).IsRequired();
+        builder.Property(e => e.IdentityUserId).HasMaxLength(450).IsRequired();
+        builder.HasIndex(e => e.Token).IsUnique();
+        builder.HasIndex(e => e.IdentityUserId);
+    }
+}
+
 public class MovimientoLoteAnimalConfiguration : IEntityTypeConfiguration<MovimientoLoteAnimal>
 {
     public void Configure(EntityTypeBuilder<MovimientoLoteAnimal> builder)

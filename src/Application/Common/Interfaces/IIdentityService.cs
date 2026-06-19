@@ -6,4 +6,6 @@ public interface IIdentityService
 {
     Task<AuthResult> RegisterAsync(string email, string password, string nombreRazonSocial, string nif, string rega, CancellationToken cancellationToken);
     Task<AuthResult> LoginAsync(string email, string password);
+    Task<AuthResult> RefreshTokenAsync(string refreshToken);
+    Task RevokeRefreshTokenAsync(string refreshToken);
 }

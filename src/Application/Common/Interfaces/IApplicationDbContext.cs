@@ -22,6 +22,7 @@ public interface IApplicationDbContext
     DbSet<InspeccionDOP> InspeccionesDOP { get; }
     DbSet<Documento> Documentos { get; }
     DbSet<AuditoriaRegistro> AuditoriaRegistros { get; }
+    DbSet<RefreshToken> RefreshTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

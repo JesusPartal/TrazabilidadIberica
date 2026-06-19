@@ -62,7 +62,7 @@ public class IdentityService : IIdentityService
         await _context.SaveChangesAsync(cancellationToken);
 
         var token = GenerateJwtToken(user, DefaultRole);
-        var refreshToken = GenerateRefreshToken();
+        var refreshToken = await SaveRefreshTokenAsync(user.Id, cancellationToken);
 
         return new AuthResult(true, token, refreshToken, user.Id, email, ganadero.Id.ToString(), null);
     }
@@ -80,9 +80,62 @@ public class IdentityService : IIdentityService
             .FirstOrDefaultAsync(g => g.IdentityUserId == user.Id);
 
         var token = GenerateJwtToken(user, role);
-        var refreshToken = GenerateRefreshToken();
+        var refreshToken = await SaveRefreshTokenAsync(user.Id, default);
 
         return new AuthResult(true, token, refreshToken, user.Id, user.Email, ganadero?.Id.ToString(), null);
+    }
+
+    public async Task<AuthResult> RefreshTokenAsync(string refreshToken)
+    {
+        var storedToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (storedToken is null || !storedToken.IsActive)
+            return new AuthResult(false, null, null, null, null, null, new[] { "Token de refresco inválido o expirado" });
+
+        storedToken.IsRevoked = true;
+        storedToken.RevokedAt = DateTime.UtcNow;
+
+        var user = await _userManager.FindByIdAsync(storedToken.IdentityUserId);
+        if (user is null)
+            return new AuthResult(false, null, null, null, null, null, new[] { "Usuario no encontrado" });
+
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? DefaultRole;
+        var ganadero = await _context.Ganaderos
+            .FirstOrDefaultAsync(g => g.IdentityUserId == user.Id);
+
+        var newToken = GenerateJwtToken(user, role);
+        var newRefreshToken = await SaveRefreshTokenAsync(user.Id, default);
+
+        return new AuthResult(true, newToken, newRefreshToken, user.Id, user.Email, ganadero?.Id.ToString(), null);
+    }
+
+    public async Task RevokeRefreshTokenAsync(string refreshToken)
+    {
+        var storedToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (storedToken is not null)
+        {
+            storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(default);
+        }
+    }
+
+    private async Task<string> SaveRefreshTokenAsync(string userId, CancellationToken cancellationToken)
+    {
+        var token = new RefreshToken
+        {
+            Token = GenerateRefreshTokenValue(),
+            IdentityUserId = userId,
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
+        };
+
+        _context.RefreshTokens.Add(token);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return token.Token;
     }
 
     private string GenerateJwtToken(IdentityUser user, string role)
@@ -108,7 +161,7 @@ public class IdentityService : IIdentityService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private static string GenerateRefreshToken()
+    private static string GenerateRefreshTokenValue()
     {
         var bytes = new byte[32];
         Guid.NewGuid().ToByteArray().CopyTo(bytes, 0);

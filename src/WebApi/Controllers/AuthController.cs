@@ -36,4 +36,26 @@ public class AuthController : ControllerBase
 
         return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId, email = result.Email, ganaderoId = result.GanaderoId });
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenCommand command)
+    {
+        var result = await _mediator.Send(command);
+
+        if (!result.Success)
+            return Unauthorized(new { errors = result.Errors });
+
+        return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId, email = result.Email, ganaderoId = result.GanaderoId });
+    }
+
+    [HttpPost("revoke")]
+    public async Task<IActionResult> Revoke([FromBody] RevokeTokenCommand command)
+    {
+        var result = await _mediator.Send(command);
+
+        if (!result.Success)
+            return BadRequest(new { errors = result.Errors });
+
+        return Ok(new { message = "Token revocado" });
+    }
 }

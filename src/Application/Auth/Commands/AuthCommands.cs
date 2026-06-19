@@ -16,6 +16,14 @@ public record LoginCommand(
     string Password
 ) : IRequest<AuthResult>;
 
+public record RefreshTokenCommand(
+    string RefreshToken
+) : IRequest<AuthResult>;
+
+public record RevokeTokenCommand(
+    string RefreshToken
+) : IRequest<AuthResult>;
+
 public record AuthResult(
     bool Success,
     string? Token,

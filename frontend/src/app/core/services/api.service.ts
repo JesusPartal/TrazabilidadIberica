@@ -5,7 +5,7 @@ import type { Animal } from '../models/animal';
 import type { Finca } from '../models/finca';
 import type { Lote } from '../models/lote';
 import type { MovimientoAnimal } from '../models/movimiento-animal';
-import type { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth';
+import type { LoginRequest, LoginResponse, RegisterRequest, RefreshRequest, RefreshResponse } from '../models/auth';
 import type { PagedList } from '../models/paged-list';
 import type { SyncQueueItem, SyncResponse } from '../models/sync';
 import { environment } from '../../../environments/environment';
@@ -22,6 +22,14 @@ export class ApiService {
 
   register(request: RegisterRequest): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/auth/register`, request);
+  }
+
+  refresh(request: RefreshRequest): Observable<RefreshResponse> {
+    return this.http.post<RefreshResponse>(`${this.baseUrl}/auth/refresh`, request);
+  }
+
+  revoke(request: RefreshRequest): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/auth/revoke`, request);
   }
 
   // Animals

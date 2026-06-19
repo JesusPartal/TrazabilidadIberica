@@ -71,4 +71,5 @@ public class TestDbContext : DbContext, IApplicationDbContext
     public DbSet<InspeccionDOP> InspeccionesDOP => Set<InspeccionDOP>();
     public DbSet<Documento> Documentos => Set<Documento>();
     public DbSet<AuditoriaRegistro> AuditoriaRegistros => Set<AuditoriaRegistro>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 }

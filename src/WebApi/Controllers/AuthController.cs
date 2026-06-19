@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
         if (!result.Success)
             return BadRequest(new { errors = result.Errors });
 
-        return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId });
+        return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId, email = result.Email, ganaderoId = result.GanaderoId });
     }
 
     [HttpPost("login")]
@@ -34,6 +34,6 @@ public class AuthController : ControllerBase
         if (!result.Success)
             return Unauthorized(new { errors = result.Errors });
 
-        return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId });
+        return Ok(new { token = result.Token, refreshToken = result.RefreshToken, userId = result.UserId, email = result.Email, ganaderoId = result.GanaderoId });
     }
 }

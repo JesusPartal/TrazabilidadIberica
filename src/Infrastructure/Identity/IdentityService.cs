@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -41,7 +42,7 @@ public class IdentityService : IIdentityService
         var result = await _userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)
-            return new AuthResult(false, null, null, null, result.Errors.Select(e => e.Description).ToArray());
+            return new AuthResult(false, null, null, null, null, null, result.Errors.Select(e => e.Description).ToArray());
 
         if (!await _roleManager.RoleExistsAsync(DefaultRole))
             await _roleManager.CreateAsync(new IdentityRole(DefaultRole));
@@ -63,7 +64,7 @@ public class IdentityService : IIdentityService
         var token = GenerateJwtToken(user, DefaultRole);
         var refreshToken = GenerateRefreshToken();
 
-        return new AuthResult(true, token, refreshToken, user.Id, null);
+        return new AuthResult(true, token, refreshToken, user.Id, email, ganadero.Id.ToString(), null);
     }
 
     public async Task<AuthResult> LoginAsync(string email, string password)
@@ -71,14 +72,17 @@ public class IdentityService : IIdentityService
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user is null || !await _userManager.CheckPasswordAsync(user, password))
-            return new AuthResult(false, null, null, null, new[] { "Credenciales inválidas" });
+            return new AuthResult(false, null, null, null, null, null, new[] { "Credenciales inválidas" });
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? DefaultRole;
+
+        var ganadero = await _context.Ganaderos
+            .FirstOrDefaultAsync(g => g.IdentityUserId == user.Id);
 
         var token = GenerateJwtToken(user, role);
         var refreshToken = GenerateRefreshToken();
 
-        return new AuthResult(true, token, refreshToken, user.Id, null);
+        return new AuthResult(true, token, refreshToken, user.Id, user.Email, ganadero?.Id.ToString(), null);
     }
 
     private string GenerateJwtToken(IdentityUser user, string role)

@@ -21,5 +21,7 @@ public record AuthResult(
     string? Token,
     string? RefreshToken,
     string? UserId,
+    string? Email,
+    string? GanaderoId,
     string[]? Errors
 );

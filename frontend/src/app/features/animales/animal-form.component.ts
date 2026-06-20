@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
@@ -129,6 +130,7 @@ export class AnimalFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   protected TipoAnimal = TipoAnimal;
   protected SexoAnimal = SexoAnimal;
@@ -199,9 +201,10 @@ export class AnimalFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('animal', 'animales', 'animal', data, id, id
+      const saved = await this.offline.save('animal', 'animales', 'animal', data, id, id
         ? this.api.updateAnimal(id, data)
         : this.api.createAnimal(data));
+      await this.log.log('Animal', saved.id, id ? 'Modificación' : 'Creación', `Crotal: ${data.numeroCrotal}`);
       this.router.navigate(['/animals']);
     } catch {
       this.error.set('Error al guardar');

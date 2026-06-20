@@ -92,6 +92,7 @@ interface ChartSlice {
           <a routerLink="/bajas" class="card"><h3>Bajas</h3><p>Registro de bajas de animales</p></a>
           <a routerLink="/campanias" class="card"><h3>Campañas</h3><p>Campañas de montanera</p></a>
           <a routerLink="/tratamientos" class="card"><h3>Tratamientos</h3><p>Tratamientos veterinarios</p></a>
+          <a routerLink="/activity-log" class="card"><h3>Actividad</h3><p>Registro de operaciones</p></a>
         </nav>
       </div>
     </div>

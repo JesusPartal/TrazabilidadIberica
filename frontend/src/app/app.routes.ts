@@ -152,6 +152,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tratamientos/tratamiento-form.component').then((c) => c.TratamientoFormComponent),
   },
   {
+    path: 'activity-log',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/activity-log/activity-log-list.component').then((c) => c.ActivityLogListComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

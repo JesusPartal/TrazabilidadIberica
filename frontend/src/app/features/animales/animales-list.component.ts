@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Animal } from '../../core/models/animal';
 import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
 import { exportCsv } from '../../shared/utils/csv-export';
@@ -146,6 +147,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class AnimalesListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   animales = signal<Animal[]>([]);
   loading = signal(true);
@@ -194,7 +196,9 @@ export class AnimalesListComponent implements OnInit {
 
   async deleteAnimal(id: string) {
     if (!confirm('¿Eliminar este animal?')) return;
+    const a = this.animales().find(x => x.id === id);
     await this.offline.remove('animales', 'animal', id, this.api.deleteAnimal(id));
+    await this.log.log('Animal', id, 'Baja', a ? `Crotal: ${a.numeroCrotal}` : null);
     this.loadAnimales();
   }
 

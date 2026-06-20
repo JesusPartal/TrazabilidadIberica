@@ -10,6 +10,7 @@ import type { Baja } from '../models/baja';
 import type { CampaniaMontanera } from '../models/campania-montanera';
 import type { TratamientoVeterinario } from '../models/tratamiento-veterinario';
 import type { SyncQueueItem } from '../models/sync';
+import type { ActivityLogRecord } from '../models/activity-log';
 
 @Injectable({ providedIn: 'root' })
 export class DbService extends Dexie {
@@ -23,6 +24,7 @@ export class DbService extends Dexie {
   campaniasMontanera!: EntityTable<CampaniaMontanera, 'id'>;
   tratamientosVeterinarios!: EntityTable<TratamientoVeterinario, 'id'>;
   syncQueue!: EntityTable<SyncQueueItem, 'id'>;
+  activityLog!: EntityTable<ActivityLogRecord, 'id'>;
 
   constructor() {
     super('TrazabilidadIberica');
@@ -49,6 +51,19 @@ export class DbService extends Dexie {
       campaniasMontanera: 'id, fincaId, deletedAt',
       tratamientosVeterinarios: 'id, animalId, veterinarioId, deletedAt',
       syncQueue: '++id, entityType, entityId, createdAt',
+    });
+    this.version(4).stores({
+      animales: 'id, estado, fincaActualId, deletedAt',
+      fincas: 'id, ganaderoId, deletedAt',
+      lotes: 'id, fincaId, deletedAt',
+      movimientosAnimal: 'id, animalId, fincaOrigenId, deletedAt',
+      ganaderos: 'id, deletedAt',
+      veterinarios: 'id, deletedAt',
+      bajas: 'id, animalId, deletedAt',
+      campaniasMontanera: 'id, fincaId, deletedAt',
+      tratamientosVeterinarios: 'id, animalId, veterinarioId, deletedAt',
+      syncQueue: '++id, entityType, entityId, createdAt',
+      activityLog: 'id, entityName, action, performedAt',
     });
   }
 }

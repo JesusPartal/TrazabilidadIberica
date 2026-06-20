@@ -5,6 +5,11 @@ import type { Animal } from '../models/animal';
 import type { Finca } from '../models/finca';
 import type { Lote } from '../models/lote';
 import type { MovimientoAnimal } from '../models/movimiento-animal';
+import type { Ganadero } from '../models/ganadero';
+import type { Veterinario } from '../models/veterinario';
+import type { Baja } from '../models/baja';
+import type { CampaniaMontanera } from '../models/campania-montanera';
+import type { TratamientoVeterinario } from '../models/tratamiento-veterinario';
 import type { LoginRequest, LoginResponse, RegisterRequest, RefreshRequest, RefreshResponse } from '../models/auth';
 import type { PagedList } from '../models/paged-list';
 import type { SyncQueueItem, SyncResponse } from '../models/sync';
@@ -123,6 +128,121 @@ export class ApiService {
 
   deleteMovimiento(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/movimientosanimal/${id}`);
+  }
+
+  // Ganaderos
+  getGanaderos(page = 1, pageSize = 50): Observable<PagedList<Ganadero>> {
+    return this.http.get<PagedList<Ganadero>>(`${this.baseUrl}/ganaderos`, {
+      params: { page, pageSize },
+    });
+  }
+
+  getGanadero(id: string): Observable<Ganadero> {
+    return this.http.get<Ganadero>(`${this.baseUrl}/ganaderos/${id}`);
+  }
+
+  createGanadero(ganadero: Partial<Ganadero>): Observable<Ganadero> {
+    return this.http.post<Ganadero>(`${this.baseUrl}/ganaderos`, ganadero);
+  }
+
+  updateGanadero(id: string, ganadero: Partial<Ganadero>): Observable<Ganadero> {
+    return this.http.put<Ganadero>(`${this.baseUrl}/ganaderos/${id}`, ganadero);
+  }
+
+  deleteGanadero(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/ganaderos/${id}`);
+  }
+
+  // Veterinarios
+  getVeterinarios(page = 1, pageSize = 50): Observable<PagedList<Veterinario>> {
+    return this.http.get<PagedList<Veterinario>>(`${this.baseUrl}/veterinarios`, {
+      params: { page, pageSize },
+    });
+  }
+
+  getVeterinario(id: string): Observable<Veterinario> {
+    return this.http.get<Veterinario>(`${this.baseUrl}/veterinarios/${id}`);
+  }
+
+  createVeterinario(veterinario: Partial<Veterinario>): Observable<Veterinario> {
+    return this.http.post<Veterinario>(`${this.baseUrl}/veterinarios`, veterinario);
+  }
+
+  updateVeterinario(id: string, veterinario: Partial<Veterinario>): Observable<Veterinario> {
+    return this.http.put<Veterinario>(`${this.baseUrl}/veterinarios/${id}`, veterinario);
+  }
+
+  deleteVeterinario(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/veterinarios/${id}`);
+  }
+
+  // Bajas
+  getBajas(page = 1, pageSize = 50): Observable<PagedList<Baja>> {
+    return this.http.get<PagedList<Baja>>(`${this.baseUrl}/bajas`, {
+      params: { page, pageSize },
+    });
+  }
+
+  getBaja(id: string): Observable<Baja> {
+    return this.http.get<Baja>(`${this.baseUrl}/bajas/${id}`);
+  }
+
+  createBaja(baja: Partial<Baja>): Observable<Baja> {
+    return this.http.post<Baja>(`${this.baseUrl}/bajas`, baja);
+  }
+
+  updateBaja(id: string, baja: Partial<Baja>): Observable<Baja> {
+    return this.http.put<Baja>(`${this.baseUrl}/bajas/${id}`, baja);
+  }
+
+  deleteBaja(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/bajas/${id}`);
+  }
+
+  // Campanias Montanera
+  getCampanias(page = 1, pageSize = 50): Observable<PagedList<CampaniaMontanera>> {
+    return this.http.get<PagedList<CampaniaMontanera>>(`${this.baseUrl}/campaniasmontanera`, {
+      params: { page, pageSize },
+    });
+  }
+
+  getCampania(id: string): Observable<CampaniaMontanera> {
+    return this.http.get<CampaniaMontanera>(`${this.baseUrl}/campaniasmontanera/${id}`);
+  }
+
+  createCampania(campania: Partial<CampaniaMontanera>): Observable<CampaniaMontanera> {
+    return this.http.post<CampaniaMontanera>(`${this.baseUrl}/campaniasmontanera`, campania);
+  }
+
+  updateCampania(id: string, campania: Partial<CampaniaMontanera>): Observable<CampaniaMontanera> {
+    return this.http.put<CampaniaMontanera>(`${this.baseUrl}/campaniasmontanera/${id}`, campania);
+  }
+
+  deleteCampania(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/campaniasmontanera/${id}`);
+  }
+
+  // Tratamientos Veterinarios
+  getTratamientos(page = 1, pageSize = 50): Observable<PagedList<TratamientoVeterinario>> {
+    return this.http.get<PagedList<TratamientoVeterinario>>(`${this.baseUrl}/tratamientosveterinarios`, {
+      params: { page, pageSize },
+    });
+  }
+
+  getTratamiento(id: string): Observable<TratamientoVeterinario> {
+    return this.http.get<TratamientoVeterinario>(`${this.baseUrl}/tratamientosveterinarios/${id}`);
+  }
+
+  createTratamiento(tratamiento: Partial<TratamientoVeterinario>): Observable<TratamientoVeterinario> {
+    return this.http.post<TratamientoVeterinario>(`${this.baseUrl}/tratamientosveterinarios`, tratamiento);
+  }
+
+  updateTratamiento(id: string, tratamiento: Partial<TratamientoVeterinario>): Observable<TratamientoVeterinario> {
+    return this.http.put<TratamientoVeterinario>(`${this.baseUrl}/tratamientosveterinarios/${id}`, tratamiento);
+  }
+
+  deleteTratamiento(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/tratamientosveterinarios/${id}`);
   }
 
   // Sync

@@ -1,30 +1,29 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { AuthService } from '../../core/services/auth.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
-import type { Finca } from '../../core/models/finca';
+import type { Ganadero } from '../../core/models/ganadero';
 
 @Component({
-  selector: 'app-fincas-list',
+  selector: 'app-ganaderos-list',
   standalone: true,
   imports: [RouterLink],
   template: `
     <div class="page">
       <header>
         <a routerLink="/" class="back">←</a>
-        <h1>Fincas</h1>
-        <a routerLink="/farms/new" class="btn-primary">➕ Nueva</a>
+        <h1>Ganaderos</h1>
+        <a routerLink="/ganaderos/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
         <div class="error">{{ error() }}</div>
-      } @else if (fincas().length === 0) {
+      } @else if (items().length === 0) {
         <div class="empty">
-          <p>No hay fincas registradas</p>
-          <a routerLink="/farms/new" class="btn-primary">Crear primera finca</a>
+          <p>No hay ganaderos registrados</p>
+          <a routerLink="/ganaderos/new" class="btn-primary">Registrar primer ganadero</a>
         </div>
       } @else {
         <div class="table-wrap">
@@ -32,22 +31,24 @@ import type { Finca } from '../../core/models/finca';
             <thead>
               <tr>
                 <th>Nombre</th>
+                <th>NIF</th>
                 <th>REGA</th>
-                <th>Municipio</th>
-                <th>Provincia</th>
+                <th>Teléfono</th>
+                <th>Email</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              @for (f of fincas(); track f.id) {
+              @for (item of items(); track item.id) {
                 <tr>
-                  <td>{{ f.nombre }}</td>
-                  <td>{{ f.rega }}</td>
-                  <td>{{ f.municipio ?? '—' }}</td>
-                  <td>{{ f.provincia ?? '—' }}</td>
+                  <td>{{ item.nombreRazonSocial }}</td>
+                  <td>{{ item.nif }}</td>
+                  <td>{{ item.rega }}</td>
+                  <td>{{ item.telefono ?? '—' }}</td>
+                  <td>{{ item.email ?? '—' }}</td>
                   <td class="actions">
-                    <a [routerLink]="['/farms', f.id, 'edit']" class="btn-sm">✎</a>
-                    <button class="btn-sm danger" (click)="deleteFinca(f.id)">✕</button>
+                    <a [routerLink]="['/ganaderos', item.id, 'edit']" class="btn-sm">✎</a>
+                    <button class="btn-sm danger" (click)="deleteItem(item.id)">✕</button>
                   </td>
                 </tr>
               }
@@ -71,7 +72,7 @@ import type { Finca } from '../../core/models/finca';
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
     .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
-    .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; }
+    .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
     .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
     .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
     .error { color: #dc2626; }
@@ -86,42 +87,41 @@ import type { Finca } from '../../core/models/finca';
     .pagination button:disabled { opacity: 0.4; cursor: default; }
   `],
 })
-export class FincasListComponent implements OnInit {
+export class GanaderosListComponent implements OnInit {
   private api = inject(ApiService);
-  private auth = inject(AuthService);
   private offline = inject(OfflineDataService);
 
-  fincas = signal<Finca[]>([]);
+  items = signal<Ganadero[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
 
   ngOnInit() {
-    this.loadFincas();
+    this.loadItems();
   }
 
-  private async loadFincas() {
+  private async loadItems() {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const { items, totalPages } = await this.offline.getAll('fincas', this.api.getFincas(this.auth.ganaderoId() ?? undefined, this.page()));
-      this.fincas.set(items);
+      const { items, totalPages } = await this.offline.getAll('ganaderos', this.api.getGanaderos(this.page()));
+      this.items.set(items);
       this.totalPages.set(totalPages);
     } catch {
-      this.error.set('Error al cargar fincas');
+      this.error.set('Error al cargar ganaderos');
     }
     this.loading.set(false);
   }
 
   goTo(p: number) {
     this.page.set(p);
-    this.loadFincas();
+    this.loadItems();
   }
 
-  async deleteFinca(id: string) {
-    if (!confirm('¿Eliminar esta finca?')) return;
-    await this.offline.remove('fincas', 'finca', id, this.api.deleteFinca(id));
-    this.loadFincas();
+  async deleteItem(id: string) {
+    if (!confirm('¿Eliminar este ganadero?')) return;
+    await this.offline.remove('ganaderos', 'ganadero', id, this.api.deleteGanadero(id));
+    this.loadItems();
   }
 }

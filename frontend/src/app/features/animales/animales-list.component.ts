@@ -2,10 +2,9 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
-import { AuthService } from '../../core/services/auth.service';
+import { OfflineDataService } from '../../core/services/offline-data.service';
 import type { Animal } from '../../core/models/animal';
 import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
-import type { PagedList } from '../../core/models/paged-list';
 
 @Component({
   selector: 'app-animales-list',
@@ -102,6 +101,7 @@ import type { PagedList } from '../../core/models/paged-list';
 })
 export class AnimalesListComponent implements OnInit {
   private api = inject(ApiService);
+  private offline = inject(OfflineDataService);
 
   animales = signal<Animal[]>([]);
   loading = signal(true);
@@ -113,20 +113,17 @@ export class AnimalesListComponent implements OnInit {
     this.loadAnimales();
   }
 
-  private loadAnimales() {
+  private async loadAnimales() {
     this.loading.set(true);
     this.error.set(null);
-    this.api.getAnimals(this.page()).subscribe({
-      next: (res: PagedList<Animal>) => {
-        this.animales.set(res.items);
-        this.totalPages.set(res.totalPages);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Error al cargar animales');
-        this.loading.set(false);
-      },
-    });
+    try {
+      const { items, totalPages } = await this.offline.getAll('animales', this.api.getAnimals(this.page()));
+      this.animales.set(items);
+      this.totalPages.set(totalPages);
+    } catch {
+      this.error.set('Error al cargar animales');
+    }
+    this.loading.set(false);
   }
 
   goTo(p: number) {
@@ -134,12 +131,10 @@ export class AnimalesListComponent implements OnInit {
     this.loadAnimales();
   }
 
-  deleteAnimal(id: string) {
+  async deleteAnimal(id: string) {
     if (!confirm('¿Eliminar este animal?')) return;
-    this.api.deleteAnimal(id).subscribe({
-      next: () => this.loadAnimales(),
-      error: () => alert('Error al eliminar'),
-    });
+    await this.offline.remove('animales', 'animal', id, this.api.deleteAnimal(id));
+    this.loadAnimales();
   }
 
   tipoLabel(t: TipoAnimal): string {

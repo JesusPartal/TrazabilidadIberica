@@ -5,14 +5,14 @@ import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
 
 @Component({
-  selector: 'app-finca-form',
+  selector: 'app-ganadero-form',
   standalone: true,
   imports: [RouterLink, ReactiveFormsModule],
   template: `
     <div class="page">
       <header>
-        <a routerLink="/farms" class="back">←</a>
-        <h1>{{ isEdit() ? 'Editar' : 'Nueva' }} Finca</h1>
+        <a routerLink="/ganaderos" class="back">←</a>
+        <h1>{{ isEdit() ? 'Editar' : 'Nuevo' }} Ganadero</h1>
       </header>
 
       @if (error()) {
@@ -21,9 +21,17 @@ import { OfflineDataService } from '../../core/services/offline-data.service';
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">
         <label>
-          Nombre *
-          <input type="text" formControlName="nombre" />
-          @if (nombre?.invalid && nombre?.touched) {
+          Nombre / Razón Social *
+          <input type="text" formControlName="nombreRazonSocial" />
+          @if (nombreRazonSocial?.invalid && nombreRazonSocial?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          NIF *
+          <input type="text" formControlName="nif" />
+          @if (nif?.invalid && nif?.touched) {
             <small class="field-error">Requerido</small>
           }
         </label>
@@ -37,27 +45,22 @@ import { OfflineDataService } from '../../core/services/offline-data.service';
         </label>
 
         <label>
-          Dirección
-          <input type="text" formControlName="direccion" />
+          Teléfono
+          <input type="text" formControlName="telefono" />
         </label>
 
         <label>
-          Municipio
-          <input type="text" formControlName="municipio" />
+          Email
+          <input type="email" formControlName="email" />
         </label>
 
         <label>
-          Provincia
-          <input type="text" formControlName="provincia" />
-        </label>
-
-        <label>
-          Código Postal
-          <input type="text" formControlName="codigoPostal" />
+          Dirección Completa
+          <input type="text" formControlName="direccionCompleta" />
         </label>
 
         <div class="form-actions">
-          <a routerLink="/farms" class="btn-cancel">Cancelar</a>
+          <a routerLink="/ganaderos" class="btn-cancel">Cancelar</a>
           <button type="submit" class="btn-primary" [disabled]="form.invalid || saving()">
             {{ saving() ? 'Guardando...' : 'Guardar' }}
           </button>
@@ -73,7 +76,7 @@ import { OfflineDataService } from '../../core/services/offline-data.service';
     .error { color: #dc2626; padding: 0.75rem; background: #fee; border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
     .form { display: flex; flex-direction: column; gap: 1rem; }
     label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; font-weight: 500; }
-    input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
     .field-error { color: #dc2626; font-weight: 400; }
     .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; }
     .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
@@ -81,7 +84,7 @@ import { OfflineDataService } from '../../core/services/offline-data.service';
     .btn-cancel { background: none; border: 1px solid #ccc; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.875rem; text-align: center; }
   `],
 })
-export class FincaFormComponent implements OnInit {
+export class GanaderoFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
@@ -93,24 +96,25 @@ export class FincaFormComponent implements OnInit {
   error = signal<string | null>(null);
 
   form = this.fb.group({
-    nombre: ['', Validators.required],
+    nombreRazonSocial: ['', Validators.required],
+    nif: ['', Validators.required],
     rega: ['', Validators.required],
-    direccion: [''],
-    municipio: [''],
-    provincia: [''],
-    codigoPostal: [''],
+    telefono: [''],
+    email: [''],
+    direccionCompleta: [''],
   });
 
-  get nombre() { return this.form.get('nombre'); }
+  get nombreRazonSocial() { return this.form.get('nombreRazonSocial'); }
+  get nif() { return this.form.get('nif'); }
   get rega() { return this.form.get('rega'); }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
-      this.api.getFinca(id).subscribe({
-        next: (f) => this.form.patchValue(f),
-        error: () => this.error.set('Error al cargar finca'),
+      this.api.getGanadero(id).subscribe({
+        next: (g) => this.form.patchValue(g),
+        error: () => this.error.set('Error al cargar ganadero'),
       });
     }
   }
@@ -121,13 +125,21 @@ export class FincaFormComponent implements OnInit {
     this.error.set(null);
 
     const id = this.route.snapshot.paramMap.get('id');
-    const data = this.form.value as any;
+    const raw = this.form.value;
+    const data = {
+      nombreRazonSocial: raw.nombreRazonSocial ?? '',
+      nif: raw.nif ?? '',
+      rega: raw.rega ?? '',
+      telefono: raw.telefono || null,
+      email: raw.email || null,
+      direccionCompleta: raw.direccionCompleta || null,
+    } as any;
 
     try {
-      await this.offline.save('finca', 'fincas', 'finca', data, id, id
-        ? this.api.updateFinca(id, data)
-        : this.api.createFinca(data));
-      this.router.navigate(['/farms']);
+      await this.offline.save('ganadero', 'ganaderos', 'ganadero', data, id, id
+        ? this.api.updateGanadero(id, data)
+        : this.api.createGanadero(data));
+      this.router.navigate(['/ganaderos']);
     } catch {
       this.error.set('Error al guardar');
       this.saving.set(false);

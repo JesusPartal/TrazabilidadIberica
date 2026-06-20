@@ -34,6 +34,26 @@ import { AuthService } from '../../core/services/auth.service';
           <h2>Movimientos</h2>
           <p>Entradas y salidas</p>
         </a>
+        <a routerLink="/ganaderos" class="card">
+          <h2>Ganaderos</h2>
+          <p>Titulares de explotaciones</p>
+        </a>
+        <a routerLink="/veterinarios" class="card">
+          <h2>Veterinarios</h2>
+          <p>Profesionales veterinarios</p>
+        </a>
+        <a routerLink="/bajas" class="card">
+          <h2>Bajas</h2>
+          <p>Registro de bajas de animales</p>
+        </a>
+        <a routerLink="/campanias" class="card">
+          <h2>Campañas</h2>
+          <p>Campañas de montanera</p>
+        </a>
+        <a routerLink="/tratamientos" class="card">
+          <h2>Tratamientos</h2>
+          <p>Tratamientos veterinarios</p>
+        </a>
       </nav>
     </div>
   `,

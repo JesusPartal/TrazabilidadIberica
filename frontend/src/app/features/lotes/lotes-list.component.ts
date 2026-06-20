@@ -2,9 +2,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
+import { OfflineDataService } from '../../core/services/offline-data.service';
 import type { Lote } from '../../core/models/lote';
 import { CategoriaLote } from '../../core/models/lote';
-import type { PagedList } from '../../core/models/paged-list';
+
 
 @Component({
   selector: 'app-lotes-list',
@@ -15,6 +16,7 @@ import type { PagedList } from '../../core/models/paged-list';
       <header>
         <a routerLink="/" class="back">←</a>
         <h1>Lotes</h1>
+        <a routerLink="/lotes/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
       @if (loading()) {
@@ -49,6 +51,7 @@ import type { PagedList } from '../../core/models/paged-list';
                   <td>{{ l.pesoMedioKg }} kg</td>
                   <td>{{ l.fechaFormacion | date:'dd/MM/yyyy' }}</td>
                   <td class="actions">
+                    <a [routerLink]="['/lotes', l.id, 'edit']" class="btn-sm">✎</a>
                     <button class="btn-sm danger" (click)="deleteLote(l.id)">✕</button>
                   </td>
                 </tr>
@@ -72,7 +75,8 @@ import type { PagedList } from '../../core/models/paged-list';
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; }
+    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
+    .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
     .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
     .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
     .error { color: #dc2626; }
@@ -89,6 +93,7 @@ import type { PagedList } from '../../core/models/paged-list';
 })
 export class LotesListComponent implements OnInit {
   private api = inject(ApiService);
+  private offline = inject(OfflineDataService);
 
   lotes = signal<Lote[]>([]);
   loading = signal(true);
@@ -100,20 +105,17 @@ export class LotesListComponent implements OnInit {
     this.loadLotes();
   }
 
-  private loadLotes() {
+  private async loadLotes() {
     this.loading.set(true);
     this.error.set(null);
-    this.api.getLotes(undefined, this.page()).subscribe({
-      next: (res: PagedList<Lote>) => {
-        this.lotes.set(res.items);
-        this.totalPages.set(res.totalPages);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Error al cargar lotes');
-        this.loading.set(false);
-      },
-    });
+    try {
+      const { items, totalPages } = await this.offline.getAll('lotes', this.api.getLotes(undefined, this.page()));
+      this.lotes.set(items);
+      this.totalPages.set(totalPages);
+    } catch {
+      this.error.set('Error al cargar lotes');
+    }
+    this.loading.set(false);
   }
 
   goTo(p: number) {
@@ -121,12 +123,10 @@ export class LotesListComponent implements OnInit {
     this.loadLotes();
   }
 
-  deleteLote(id: string) {
+  async deleteLote(id: string) {
     if (!confirm('¿Eliminar este lote?')) return;
-    this.api.deleteLote(id).subscribe({
-      next: () => this.loadLotes(),
-      error: () => alert('Error al eliminar'),
-    });
+    await this.offline.remove('lotes', 'lote', id, this.api.deleteLote(id));
+    this.loadLotes();
   }
 
   categoriaLabel(c: CategoriaLote): string {

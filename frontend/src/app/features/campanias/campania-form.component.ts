@@ -3,19 +3,19 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
-import { TipoAnimal, SexoAnimal } from '../../core/models/animal';
+import { EstadoCampania } from '../../core/models/campania-montanera';
 import type { Finca } from '../../core/models/finca';
 import type { PagedList } from '../../core/models/paged-list';
 
 @Component({
-  selector: 'app-animal-form',
+  selector: 'app-campania-form',
   standalone: true,
   imports: [RouterLink, ReactiveFormsModule],
   template: `
     <div class="page">
       <header>
-        <a routerLink="/animals" class="back">←</a>
-        <h1>{{ isEdit() ? 'Editar' : 'Nuevo' }} Animal</h1>
+        <a routerLink="/campanias" class="back">←</a>
+        <h1>{{ isEdit() ? 'Editar' : 'Nueva' }} Campaña Montanera</h1>
       </header>
 
       @if (error()) {
@@ -24,78 +24,75 @@ import type { PagedList } from '../../core/models/paged-list';
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">
         <label>
-          Número de Crotal *
-          <input type="text" formControlName="numeroCrotal" />
-          @if (numeroCrotal?.invalid && numeroCrotal?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Tipo *
-          <select formControlName="tipo">
+          Finca *
+          <select formControlName="fincaId">
             <option value="">Seleccionar...</option>
-            <option [value]="TipoAnimal.Cerdo">Cerdo</option>
-            <option [value]="TipoAnimal.Lechon">Lechón</option>
-          </select>
-          @if (tipo?.invalid && tipo?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Sexo *
-          <select formControlName="sexo">
-            <option value="">Seleccionar...</option>
-            <option [value]="SexoAnimal.Macho">Macho</option>
-            <option [value]="SexoAnimal.Hembra">Hembra</option>
-          </select>
-          @if (sexo?.invalid && sexo?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Fecha de Nacimiento *
-          <input type="date" formControlName="fechaNacimiento" />
-          @if (fechaNacimiento?.invalid && fechaNacimiento?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Peso al Nacimiento (kg)
-          <input type="number" step="0.1" formControlName="pesoNacimiento" />
-        </label>
-
-        <label>
-          Fecha de Entrada *
-          <input type="date" formControlName="fechaEntrada" />
-          @if (fechaEntrada?.invalid && fechaEntrada?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Peso de Entrada (kg) *
-          <input type="number" step="0.1" formControlName="pesoEntrada" />
-          @if (pesoEntrada?.invalid && pesoEntrada?.touched) {
-            <small class="field-error">Requerido</small>
-          }
-        </label>
-
-        <label>
-          Finca Actual
-          <select formControlName="fincaActualId">
-            <option value="">Sin asignar</option>
             @for (f of fincas(); track f.id) {
               <option [value]="f.id">{{ f.nombre }}</option>
             }
           </select>
+          @if (fincaId?.invalid && fincaId?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Temporada *
+          <input type="number" formControlName="temporada" />
+          @if (temporada?.invalid && temporada?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Fecha de Inicio *
+          <input type="date" formControlName="fechaInicio" />
+          @if (fechaInicio?.invalid && fechaInicio?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Fecha de Fin
+          <input type="date" formControlName="fechaFin" />
+        </label>
+
+        <label>
+          Hectáreas Utilizadas *
+          <input type="number" step="0.01" formControlName="hectareasUtilizadas" />
+          @if (hectareasUtilizadas?.invalid && hectareasUtilizadas?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Capacidad Máx. Animales *
+          <input type="number" formControlName="capacidadMaxAnimales" />
+          @if (capacidadMaxAnimales?.invalid && capacidadMaxAnimales?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Estado *
+          <select formControlName="estadoCampania">
+            <option value="">Seleccionar...</option>
+            <option [value]="EstadoCampania.Planificada">Planificada</option>
+            <option [value]="EstadoCampania.Activa">Activa</option>
+            <option [value]="EstadoCampania.Cerrada">Cerrada</option>
+          </select>
+          @if (estadoCampania?.invalid && estadoCampania?.touched) {
+            <small class="field-error">Requerido</small>
+          }
+        </label>
+
+        <label>
+          Nº Autorización D.O.
+          <input type="text" formControlName="numAutorizacionDO" />
         </label>
 
         <div class="form-actions">
-          <a routerLink="/animals" class="btn-cancel">Cancelar</a>
+          <a routerLink="/campanias" class="btn-cancel">Cancelar</a>
           <button type="submit" class="btn-primary" [disabled]="form.invalid || saving()">
             {{ saving() ? 'Guardando...' : 'Guardar' }}
           </button>
@@ -119,15 +116,14 @@ import type { PagedList } from '../../core/models/paged-list';
     .btn-cancel { background: none; border: 1px solid #ccc; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.875rem; text-align: center; }
   `],
 })
-export class AnimalFormComponent implements OnInit {
+export class CampaniaFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  protected TipoAnimal = TipoAnimal;
-  protected SexoAnimal = SexoAnimal;
+  protected EstadoCampania = EstadoCampania;
 
   isEdit = signal(false);
   saving = signal(false);
@@ -135,22 +131,22 @@ export class AnimalFormComponent implements OnInit {
   fincas = signal<Finca[]>([]);
 
   form = this.fb.group({
-    numeroCrotal: ['', Validators.required],
-    tipo: ['' as unknown as number, Validators.required],
-    sexo: ['' as unknown as number, Validators.required],
-    fechaNacimiento: ['', Validators.required],
-    pesoNacimiento: [null as number | null],
-    fechaEntrada: ['', Validators.required],
-    pesoEntrada: [0, Validators.required],
-    fincaActualId: [''],
+    fincaId: ['', Validators.required],
+    temporada: [new Date().getFullYear(), Validators.required],
+    fechaInicio: ['', Validators.required],
+    fechaFin: [''],
+    hectareasUtilizadas: [0, Validators.required],
+    capacidadMaxAnimales: [0, Validators.required],
+    estadoCampania: ['' as unknown as number, Validators.required],
+    numAutorizacionDO: [''],
   });
 
-  get numeroCrotal() { return this.form.get('numeroCrotal'); }
-  get tipo() { return this.form.get('tipo'); }
-  get sexo() { return this.form.get('sexo'); }
-  get fechaNacimiento() { return this.form.get('fechaNacimiento'); }
-  get fechaEntrada() { return this.form.get('fechaEntrada'); }
-  get pesoEntrada() { return this.form.get('pesoEntrada'); }
+  get fincaId() { return this.form.get('fincaId'); }
+  get temporada() { return this.form.get('temporada'); }
+  get fechaInicio() { return this.form.get('fechaInicio'); }
+  get hectareasUtilizadas() { return this.form.get('hectareasUtilizadas'); }
+  get capacidadMaxAnimales() { return this.form.get('capacidadMaxAnimales'); }
+  get estadoCampania() { return this.form.get('estadoCampania'); }
 
   ngOnInit() {
     this.api.getFincas(undefined, 1, 200).subscribe({
@@ -161,17 +157,16 @@ export class AnimalFormComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
-      this.api.getAnimal(id).subscribe({
-        next: (a) => {
+      this.api.getCampania(id).subscribe({
+        next: (c) => {
           this.form.patchValue({
-            ...a,
-            tipo: a.tipo as unknown as number,
-            sexo: a.sexo as unknown as number,
-            fechaNacimiento: a.fechaNacimiento.substring(0, 10),
-            fechaEntrada: a.fechaEntrada.substring(0, 10),
+            ...c,
+            estadoCampania: c.estadoCampania as unknown as number,
+            fechaInicio: c.fechaInicio.substring(0, 10),
+            fechaFin: c.fechaFin?.substring(0, 10) ?? '',
           });
         },
-        error: () => this.error.set('Error al cargar animal'),
+        error: () => this.error.set('Error al cargar campaña'),
       });
     }
   }
@@ -184,21 +179,21 @@ export class AnimalFormComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     const raw = this.form.value;
     const data = {
-      numeroCrotal: raw.numeroCrotal ?? '',
-      tipo: Number(raw.tipo),
-      sexo: Number(raw.sexo),
-      fechaNacimiento: raw.fechaNacimiento ?? new Date().toISOString(),
-      fechaEntrada: raw.fechaEntrada ?? new Date().toISOString(),
-      pesoNacimiento: raw.pesoNacimiento ?? null,
-      pesoEntrada: Number(raw.pesoEntrada),
-      fincaActualId: raw.fincaActualId || null,
+      fincaId: raw.fincaId ?? '',
+      temporada: Number(raw.temporada),
+      fechaInicio: raw.fechaInicio ?? new Date().toISOString(),
+      fechaFin: raw.fechaFin || null,
+      hectareasUtilizadas: Number(raw.hectareasUtilizadas),
+      capacidadMaxAnimales: Number(raw.capacidadMaxAnimales),
+      estadoCampania: Number(raw.estadoCampania),
+      numAutorizacionDO: raw.numAutorizacionDO || null,
     } as any;
 
     try {
-      await this.offline.save('animal', 'animales', 'animal', data, id, id
-        ? this.api.updateAnimal(id, data)
-        : this.api.createAnimal(data));
-      this.router.navigate(['/animals']);
+      await this.offline.save('campania', 'campaniasMontanera', 'campania', data, id, id
+        ? this.api.updateCampania(id, data)
+        : this.api.createCampania(data));
+      this.router.navigate(['/campanias']);
     } catch {
       this.error.set('Error al guardar');
       this.saving.set(false);

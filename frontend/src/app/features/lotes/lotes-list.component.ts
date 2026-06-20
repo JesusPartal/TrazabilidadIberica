@@ -33,6 +33,10 @@ import { exportCsv } from '../../shared/utils/csv-export';
         </select>
       </div>
 
+      @if (!online()) {
+        <div class="offline-banner">⚠️ Sin conexión — mostrando datos guardados</div>
+      }
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -112,6 +116,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
     .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
+    .offline-banner { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
   `],
 })
 export class LotesListComponent implements OnInit {
@@ -124,6 +129,7 @@ export class LotesListComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
 
+  online = signal(true);
   searchQuery = signal('');
   categoriaFilter = signal<number | null>(null);
 
@@ -143,9 +149,10 @@ export class LotesListComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const { items, totalPages } = await this.offline.getAll('lotes', this.api.getLotes(undefined, this.page()));
+      const { items, totalPages, online } = await this.offline.getAll('lotes', this.api.getLotes(undefined, this.page()));
       this.lotes.set(items);
       this.totalPages.set(totalPages);
+      this.online.set(online);
     } catch {
       this.error.set('Error al cargar lotes');
     }

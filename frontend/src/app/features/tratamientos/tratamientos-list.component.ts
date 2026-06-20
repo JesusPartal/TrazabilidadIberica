@@ -23,6 +23,10 @@ import { exportCsv } from '../../shared/utils/csv-export';
         <input #q type="text" placeholder="Buscar por crotal o medicamento..." (input)="searchQuery.set(q.value)" class="search-input" />
       </div>
 
+      @if (!online()) {
+        <div class="offline-banner">⚠️ Sin conexión — mostrando datos guardados</div>
+      }
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -82,6 +86,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
   styles: [`
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .offline-banner { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
     .page { max-width: 960px; margin: 0 auto; padding: 1rem; }
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
@@ -113,6 +118,7 @@ export class TratamientosListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+  online = signal(true);
   searchQuery = signal('');
 
   filteredItems = computed(() => {
@@ -130,9 +136,10 @@ export class TratamientosListComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const { items, totalPages } = await this.offline.getAll('tratamientosVeterinarios', this.api.getTratamientos(this.page()));
+      const { items, totalPages, online } = await this.offline.getAll('tratamientosVeterinarios', this.api.getTratamientos(this.page()));
       this.items.set(items);
       this.totalPages.set(totalPages);
+      this.online.set(online);
     } catch {
       this.error.set('Error al cargar tratamientos');
     }

@@ -22,6 +22,10 @@ import { exportCsv } from '../../shared/utils/csv-export';
         <input #q type="text" placeholder="Buscar por nombre, NIF o REGA..." (input)="searchQuery.set(q.value)" class="search-input" />
       </div>
 
+      @if (!online()) {
+        <div class="offline-banner">⚠️ Sin conexión — mostrando datos guardados</div>
+      }
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -99,6 +103,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
     .pagination button:disabled { opacity: 0.4; cursor: default; }
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .offline-banner { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
   `],
 })
 export class GanaderosListComponent implements OnInit {
@@ -110,6 +115,7 @@ export class GanaderosListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+  online = signal(true);
   searchQuery = signal('');
 
   filteredItems = computed(() => {
@@ -127,9 +133,10 @@ export class GanaderosListComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const { items, totalPages } = await this.offline.getAll('ganaderos', this.api.getGanaderos(this.page()));
+      const { items, totalPages, online } = await this.offline.getAll('ganaderos', this.api.getGanaderos(this.page()));
       this.items.set(items);
       this.totalPages.set(totalPages);
+      this.online.set(online);
     } catch {
       this.error.set('Error al cargar ganaderos');
     }

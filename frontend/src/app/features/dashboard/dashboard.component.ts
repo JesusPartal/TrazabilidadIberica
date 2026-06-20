@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { ApiService } from '../../core/services/api.service';
 import { DbService } from '../../core/services/db.service';
 import { MovimientoAnimal, TipoMovimiento } from '../../core/models/movimiento-animal';
@@ -38,6 +39,7 @@ interface ChartSlice {
           <h1>Trazabilidad Ibérica</h1>
         </span>
         <span class="user-badge">{{ auth.email() }}</span>
+        <button class="theme-toggle" (click)="theme.toggle()" [attr.title]="theme.isDark() ? 'Modo claro' : 'Modo oscuro'">{{ theme.isDark() ? '☀️' : '🌙' }}</button>
         <button class="logout" (click)="auth.logout()">Salir</button>
       </header>
 
@@ -120,6 +122,8 @@ interface ChartSlice {
     .user-badge { font-size: 0.8rem; opacity: 0.75; font-family: var(--font-body); }
     .logout { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.35); padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: var(--font-body); }
     .logout:hover { background: rgba(255,255,255,0.1); }
+    .theme-toggle { background: transparent; color: #fff; border: none; padding: 0.25rem; cursor: pointer; font-size: 1.1rem; line-height: 1; opacity: 0.7; transition: opacity 0.15s; }
+    .theme-toggle:hover { opacity: 1; }
     .content { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
     .loading { text-align: center; padding: 2rem; color: var(--color-text-muted); }
 
@@ -168,6 +172,7 @@ interface ChartSlice {
 })
 export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
+  theme = inject(ThemeService);
   private api = inject(ApiService);
   private db = inject(DbService);
   private destroyRef = inject(DestroyRef);

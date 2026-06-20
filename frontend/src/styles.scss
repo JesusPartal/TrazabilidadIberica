@@ -58,3 +58,34 @@ body {
   --color-primary-rgb: 139, 111, 71;
   --color-primary-lighter: #F0EAE0;
 }
+
+[data-theme="dark"] {
+  --color-bg: #1A1612;
+  --color-surface: #2C2418;
+  --color-text: #E8E0D0;
+  --color-text-secondary: #C4B8A0;
+  --color-text-muted: #8A7E6E;
+  --color-earth: #C4A882;
+  --color-earth-dark: #B89870;
+  --color-earth-light: #D4C0A0;
+  --color-leather: #2C2418;
+  --color-leather-dark: #3C3228;
+  --color-straw: #D4A96A;
+  --color-straw-light: #5C4E30;
+  --color-cordovan: #C4B8A0;
+  --color-cordovan-light: #8A7E6E;
+  --color-holm-oak: #4A8A5C;
+  --color-holm-oak-light: #6AAA7C;
+  --color-terracotta: #D47A58;
+  --color-terracotta-light: #E89978;
+  --color-primary: var(--color-earth);
+  --color-primary-hover: #D4B898;
+  --color-error: var(--color-terracotta);
+  --color-error-bg: #3C2820;
+  --color-border: #3C3228;
+  --color-primary-rgb: 196, 168, 130;
+  --color-primary-lighter: #3C3228;
+  --color-creation-bg: #1C3020;
+  --color-modification-bg: #3C3228;
+  --color-deletion-bg: #3C2820;
+}

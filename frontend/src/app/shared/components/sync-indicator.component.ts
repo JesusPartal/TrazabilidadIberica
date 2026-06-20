@@ -5,9 +5,13 @@ import { SyncService } from '../../core/services/sync.service';
   selector: 'app-sync-indicator',
   standalone: true,
   template: `
-    @if (sync.pendingCount() > 0) {
-      <button class="sync-btn" (click)="sync.syncNow()" title="Enviar cambios pendientes">
-        📤 {{ sync.pendingCount() }}
+    @if (sync.pendingCount() > 0 || sync.syncing()) {
+      <button class="sync-btn" [class.syncing]="sync.syncing()" (click)="sync.syncNow()" [disabled]="sync.syncing()" title="Sincronizar">
+        @if (sync.syncing()) {
+          ⟳ Sincronizando...
+        } @else {
+          📤 {{ sync.pendingCount() }} pendiente(s)
+        }
       </button>
     }
   `,
@@ -25,6 +29,14 @@ import { SyncService } from '../../core/services/sync.service';
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       z-index: 1000;
+      transition: background 0.2s;
+    }
+    .sync-btn.syncing {
+      background: #f59e0b;
+      cursor: default;
+    }
+    .sync-btn:disabled {
+      opacity: 0.8;
     }
   `],
 })

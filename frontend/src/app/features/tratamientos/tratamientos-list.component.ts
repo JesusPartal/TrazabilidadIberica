@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -17,6 +17,10 @@ import type { TratamientoVeterinario } from '../../core/models/tratamiento-veter
         <a routerLink="/tratamientos/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por crotal o medicamento..." (input)="searchQuery.set(q.value)" class="search-input" />
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -25,6 +29,10 @@ import type { TratamientoVeterinario } from '../../core/models/tratamiento-veter
         <div class="empty">
           <p>No hay tratamientos registrados</p>
           <a routerLink="/tratamientos/new" class="btn-primary">Registrar primer tratamiento</a>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ningún tratamiento coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -41,7 +49,7 @@ import type { TratamientoVeterinario } from '../../core/models/tratamiento-veter
               </tr>
             </thead>
             <tbody>
-              @for (item of items(); track item.id) {
+              @for (item of filteredItems(); track item.id) {
                 <tr>
                   <td>{{ item.animal?.numeroCrotal ?? item.animalId }}</td>
                   <td>{{ item.veterinario?.nombreCompleto ?? item.veterinarioId }}</td>
@@ -70,6 +78,8 @@ import type { TratamientoVeterinario } from '../../core/models/tratamiento-veter
     </div>
   `,
   styles: [`
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
     .page { max-width: 960px; margin: 0 auto; padding: 1rem; }
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
@@ -99,6 +109,14 @@ export class TratamientosListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+  searchQuery = signal('');
+
+  filteredItems = computed(() => {
+    let items = this.items();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(t => (t.animal?.numeroCrotal ?? '').toLowerCase().includes(q) || t.nombreMedicamento.toLowerCase().includes(q));
+    return items;
+  });
 
   ngOnInit() {
     this.loadItems();

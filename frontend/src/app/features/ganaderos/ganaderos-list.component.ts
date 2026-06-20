@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
@@ -16,6 +16,10 @@ import type { Ganadero } from '../../core/models/ganadero';
         <a routerLink="/ganaderos/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por nombre, NIF o REGA..." (input)="searchQuery.set(q.value)" class="search-input" />
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -24,6 +28,10 @@ import type { Ganadero } from '../../core/models/ganadero';
         <div class="empty">
           <p>No hay ganaderos registrados</p>
           <a routerLink="/ganaderos/new" class="btn-primary">Registrar primer ganadero</a>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ningún ganadero coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -39,7 +47,7 @@ import type { Ganadero } from '../../core/models/ganadero';
               </tr>
             </thead>
             <tbody>
-              @for (item of items(); track item.id) {
+              @for (item of filteredItems(); track item.id) {
                 <tr>
                   <td>{{ item.nombreRazonSocial }}</td>
                   <td>{{ item.nif }}</td>
@@ -85,6 +93,8 @@ import type { Ganadero } from '../../core/models/ganadero';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
   `],
 })
 export class GanaderosListComponent implements OnInit {
@@ -96,6 +106,14 @@ export class GanaderosListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+  searchQuery = signal('');
+
+  filteredItems = computed(() => {
+    let items = this.items();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(g => g.nombreRazonSocial.toLowerCase().includes(q) || g.nif.toLowerCase().includes(q) || g.rega.toLowerCase().includes(q));
+    return items;
+  });
 
   ngOnInit() {
     this.loadItems();

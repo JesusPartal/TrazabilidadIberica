@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -19,6 +19,18 @@ import { CategoriaLote } from '../../core/models/lote';
         <a routerLink="/lotes/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por código..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #cat (change)="categoriaFilter.set(cat.value ? +cat.value : null)">
+          <option value="">Todas las categorías</option>
+          <option value="0">Cebo</option>
+          <option value="1">Recría</option>
+          <option value="2">Transición</option>
+          <option value="3">Reproducción</option>
+          <option value="4">Lechones</option>
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -26,6 +38,10 @@ import { CategoriaLote } from '../../core/models/lote';
       } @else if (lotes().length === 0) {
         <div class="empty">
           <p>No hay lotes registrados</p>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ningún lote coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -42,7 +58,7 @@ import { CategoriaLote } from '../../core/models/lote';
               </tr>
             </thead>
             <tbody>
-              @for (l of lotes(); track l.id) {
+              @for (l of filteredItems(); track l.id) {
                 <tr>
                   <td>{{ l.codigoLote }}</td>
                   <td>{{ l.finca?.nombre ?? '—' }}</td>
@@ -89,6 +105,9 @@ import { CategoriaLote } from '../../core/models/lote';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
   `],
 })
 export class LotesListComponent implements OnInit {
@@ -100,6 +119,17 @@ export class LotesListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+
+  searchQuery = signal('');
+  categoriaFilter = signal<number | null>(null);
+
+  filteredItems = computed(() => {
+    let items = this.lotes();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(l => l.codigoLote.toLowerCase().includes(q));
+    if (this.categoriaFilter() != null) items = items.filter(l => l.categoria === this.categoriaFilter());
+    return items;
+  });
 
   ngOnInit() {
     this.loadLotes();

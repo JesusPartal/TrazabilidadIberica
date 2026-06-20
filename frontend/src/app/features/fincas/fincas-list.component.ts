@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -17,6 +17,16 @@ import type { Finca } from '../../core/models/finca';
         <a routerLink="/farms/new" class="btn-primary">➕ Nueva</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por nombre o REGA..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #p (change)="provinciaFilter.set(p.value || null)">
+          <option value="">Todas las provincias</option>
+          @for (prov of provincias(); track prov) {
+            <option [value]="prov">{{ prov }}</option>
+          }
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -25,6 +35,10 @@ import type { Finca } from '../../core/models/finca';
         <div class="empty">
           <p>No hay fincas registradas</p>
           <a routerLink="/farms/new" class="btn-primary">Crear primera finca</a>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ninguna finca coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -39,7 +53,7 @@ import type { Finca } from '../../core/models/finca';
               </tr>
             </thead>
             <tbody>
-              @for (f of fincas(); track f.id) {
+              @for (f of filteredItems(); track f.id) {
                 <tr>
                   <td>{{ f.nombre }}</td>
                   <td>{{ f.rega }}</td>
@@ -84,6 +98,9 @@ import type { Finca } from '../../core/models/finca';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
   `],
 })
 export class FincasListComponent implements OnInit {
@@ -96,6 +113,19 @@ export class FincasListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+
+  searchQuery = signal('');
+  provinciaFilter = signal<string | null>(null);
+
+  filteredItems = computed(() => {
+    let items = this.fincas();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(f => f.nombre.toLowerCase().includes(q) || f.rega.toLowerCase().includes(q));
+    if (this.provinciaFilter()) items = items.filter(f => f.provincia === this.provinciaFilter());
+    return items;
+  });
+
+  provincias = computed(() => [...new Set(this.fincas().map(f => f.provincia).filter(Boolean) as string[])]);
 
   ngOnInit() {
     this.loadFincas();

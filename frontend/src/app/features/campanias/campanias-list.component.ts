@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -18,6 +18,16 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
         <a routerLink="/campanias/new" class="btn-primary">➕ Nueva</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por finca..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #est (change)="estadoFilter.set(est.value ? +est.value : null)">
+          <option value="">Todos los estados</option>
+          <option value="0">Planificada</option>
+          <option value="1">Activa</option>
+          <option value="2">Cerrada</option>
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -26,6 +36,10 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
         <div class="empty">
           <p>No hay campañas registradas</p>
           <a routerLink="/campanias/new" class="btn-primary">Registrar primera campaña</a>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ninguna campaña coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -42,7 +56,7 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
               </tr>
             </thead>
             <tbody>
-              @for (item of items(); track item.id) {
+              @for (item of filteredItems(); track item.id) {
                 <tr>
                   <td>{{ item.finca?.nombre ?? '—' }}</td>
                   <td>{{ item.temporada }}</td>
@@ -89,6 +103,9 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
   `],
 })
 export class CampaniasListComponent implements OnInit {
@@ -100,6 +117,17 @@ export class CampaniasListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+
+  searchQuery = signal('');
+  estadoFilter = signal<number | null>(null);
+
+  filteredItems = computed(() => {
+    let items = this.items();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(c => (c.finca?.nombre ?? '').toLowerCase().includes(q));
+    if (this.estadoFilter() != null) items = items.filter(c => c.estadoCampania === this.estadoFilter());
+    return items;
+  });
 
   ngOnInit() {
     this.loadItems();

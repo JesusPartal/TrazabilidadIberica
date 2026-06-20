@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -18,6 +18,18 @@ import { CausaBaja } from '../../core/models/baja';
         <a routerLink="/bajas/new" class="btn-primary">➕ Nueva</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por crotal..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #c (change)="causaFilter.set(c.value ? +c.value : null)">
+          <option value="">Todas las causas</option>
+          <option value="0">Venta</option>
+          <option value="1">Muerte</option>
+          <option value="2">Sacrificio</option>
+          <option value="3">Pérdida</option>
+          <option value="4">Donación</option>
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -26,6 +38,10 @@ import { CausaBaja } from '../../core/models/baja';
         <div class="empty">
           <p>No hay bajas registradas</p>
           <a routerLink="/bajas/new" class="btn-primary">Registrar primera baja</a>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ninguna baja coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -40,7 +56,7 @@ import { CausaBaja } from '../../core/models/baja';
               </tr>
             </thead>
             <tbody>
-              @for (item of items(); track item.id) {
+              @for (item of filteredItems(); track item.id) {
                 <tr>
                   <td>{{ item.animal?.numeroCrotal ?? item.animalId }}</td>
                   <td>{{ item.fechaBaja | date:'dd/MM/yyyy' }}</td>
@@ -85,6 +101,9 @@ import { CausaBaja } from '../../core/models/baja';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
   `],
 })
 export class BajasListComponent implements OnInit {
@@ -96,6 +115,16 @@ export class BajasListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+  searchQuery = signal('');
+  causaFilter = signal<number | null>(null);
+
+  filteredItems = computed(() => {
+    let items = this.items();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(b => (b.animal?.numeroCrotal ?? '').toLowerCase().includes(q));
+    if (this.causaFilter() != null) items = items.filter(b => b.causa === this.causaFilter());
+    return items;
+  });
 
   ngOnInit() {
     this.loadItems();

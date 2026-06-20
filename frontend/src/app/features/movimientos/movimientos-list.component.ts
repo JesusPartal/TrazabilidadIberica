@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -18,6 +18,17 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
         <a routerLink="/movements/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por crotal..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #tip (change)="tipoFilter.set(tip.value ? +tip.value : null)">
+          <option value="">Todos los tipos</option>
+          <option value="0">Entrada</option>
+          <option value="1">Salida</option>
+          <option value="2">Traslado Interno</option>
+          <option value="3">Traslado Externo</option>
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -25,6 +36,10 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
       } @else if (movimientos().length === 0) {
         <div class="empty">
           <p>No hay movimientos registrados</p>
+        </div>
+      } @else if (filteredItems().length === 0) {
+        <div class="empty">
+          <p>Ningún movimiento coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -41,7 +56,7 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
                 </tr>
             </thead>
             <tbody>
-              @for (m of movimientos(); track m.id) {
+              @for (m of filteredItems(); track m.id) {
                 <tr>
                   <td>{{ m.animal?.numeroCrotal ?? '—' }}</td>
                   <td>
@@ -94,6 +109,9 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
   `],
 })
 export class MovimientosListComponent implements OnInit {
@@ -105,6 +123,17 @@ export class MovimientosListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+
+  searchQuery = signal('');
+  tipoFilter = signal<number | null>(null);
+
+  filteredItems = computed(() => {
+    let items = this.movimientos();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(m => (m.animal?.numeroCrotal ?? '').toLowerCase().includes(q));
+    if (this.tipoFilter() != null) items = items.filter(m => m.tipoMovimiento === this.tipoFilter());
+    return items;
+  });
 
   ngOnInit() {
     this.loadMovimientos();

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
@@ -18,6 +18,28 @@ import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
         <a routerLink="/animals/new" class="btn-primary">➕ Nuevo</a>
       </header>
 
+      <div class="filters">
+        <input #q type="text" placeholder="Buscar por crotal..." (input)="searchQuery.set(q.value)" class="search-input" />
+        <select #est (change)="estadoFilter.set(est.value ? +est.value : null)">
+          <option value="">Todos los estados</option>
+          <option value="0">Activo</option>
+          <option value="1">Vendido</option>
+          <option value="2">Muerto</option>
+          <option value="3">Perdido</option>
+          <option value="4">Sacrificado</option>
+        </select>
+        <select #tip (change)="tipoFilter.set(tip.value ? +tip.value : null)">
+          <option value="">Todos los tipos</option>
+          <option value="0">Cerdo</option>
+          <option value="1">Lechón</option>
+        </select>
+        <select #sx (change)="sexoFilter.set(sx.value ? +sx.value : null)">
+          <option value="">Todos los sexos</option>
+          <option value="0">Macho</option>
+          <option value="1">Hembra</option>
+        </select>
+      </div>
+
       @if (loading()) {
         <div class="loading">Cargando...</div>
       } @else if (error()) {
@@ -26,6 +48,10 @@ import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
         <div class="empty">
           <p>No hay animales registrados</p>
           <a routerLink="/animals/new" class="btn-primary">Registrar primer animal</a>
+        </div>
+      } @else if (filteredAnimales().length === 0) {
+        <div class="empty">
+          <p>Ningún animal coincide con los filtros</p>
         </div>
       } @else {
         <div class="table-wrap">
@@ -42,7 +68,7 @@ import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
               </tr>
             </thead>
             <tbody>
-              @for (a of animales(); track a.id) {
+              @for (a of filteredAnimales(); track a.id) {
                 <tr>
                   <td>{{ a.numeroCrotal }}</td>
                   <td>{{ tipoLabel(a.tipo) }}</td>
@@ -74,7 +100,7 @@ import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
   `,
   styles: [`
     .page { max-width: 960px; margin: 0 auto; padding: 1rem; }
-    header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
     .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
@@ -83,6 +109,9 @@ import { EstadoAnimal, SexoAnimal, TipoAnimal } from '../../core/models/animal';
     .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
     .error { color: #dc2626; }
     .empty { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
+    .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; font-size: 0.875rem; }
@@ -108,6 +137,21 @@ export class AnimalesListComponent implements OnInit {
   error = signal<string | null>(null);
   page = signal(1);
   totalPages = signal(1);
+
+  searchQuery = signal('');
+  estadoFilter = signal<number | null>(null);
+  tipoFilter = signal<number | null>(null);
+  sexoFilter = signal<number | null>(null);
+
+  filteredAnimales = computed(() => {
+    let items = this.animales();
+    const q = this.searchQuery().toLowerCase();
+    if (q) items = items.filter(a => a.numeroCrotal.toLowerCase().includes(q));
+    if (this.estadoFilter() != null) items = items.filter(a => a.estado === this.estadoFilter());
+    if (this.tipoFilter() != null) items = items.filter(a => a.tipo === this.tipoFilter());
+    if (this.sexoFilter() != null) items = items.filter(a => a.sexo === this.sexoFilter());
+    return items;
+  });
 
   ngOnInit() {
     this.loadAnimales();

@@ -1,11 +1,15 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, viewChild, ElementRef, effect, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
+import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { DbService } from '../../core/services/db.service';
 import { MovimientoAnimal, TipoMovimiento } from '../../core/models/movimiento-animal';
+import { EstadoAnimal } from '../../core/models/animal';
+
+Chart.register(...registerables);
 
 interface StatEntry {
   label: string;
@@ -13,6 +17,12 @@ interface StatEntry {
   color: string;
   icon: string;
   count: number;
+}
+
+interface ChartSlice {
+  label: string;
+  count: number;
+  color: string;
 }
 
 @Component({
@@ -41,6 +51,19 @@ interface StatEntry {
             </a>
           }
         </section>
+
+        @if (!loading()) {
+          <section class="charts">
+            <div class="chart-card">
+              <h2>Animales por estado</h2>
+              <div class="chart-wrap"><canvas #animalChart></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h2>Movimientos por tipo</h2>
+              <div class="chart-wrap"><canvas #movementChart></canvas></div>
+            </div>
+          </section>
+        }
 
         @if (!loading() && recentMovements().length > 0) {
           <section class="recent">
@@ -90,6 +113,12 @@ interface StatEntry {
     .stat-count { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
     .stat-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
 
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .chart-card { background: #fff; border-radius: 10px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+    .chart-card h2 { font-size: 0.9rem; margin: 0 0 0.5rem; color: #1e293b; }
+    .chart-wrap { position: relative; height: 200px; }
+    .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
     .recent { background: #fff; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
     .recent h2 { font-size: 0.95rem; margin: 0 0 0.75rem; color: #1e293b; }
     .movement-list { display: flex; flex-direction: column; }
@@ -113,6 +142,7 @@ interface StatEntry {
       .stat-card { padding: 0.6rem 0.3rem; }
       .stat-icon { font-size: 1.1rem; }
       .stat-count { font-size: 1.1rem; }
+      .charts { grid-template-columns: 1fr; }
       .grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
       .card { padding: 0.9rem; }
       .card h3 { font-size: 0.85rem; }
@@ -123,15 +153,88 @@ export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
   private api = inject(ApiService);
   private db = inject(DbService);
+  private destroyRef = inject(DestroyRef);
 
   stats = signal<StatEntry[]>([]);
   recentMovements = signal<MovimientoAnimal[]>([]);
   loading = signal(true);
 
+  animalSlices = signal<ChartSlice[]>([]);
+  movementSlices = signal<ChartSlice[]>([]);
+
+  readonly animalChart = viewChild<ElementRef<HTMLCanvasElement>>('animalChart');
+  readonly movementChart = viewChild<ElementRef<HTMLCanvasElement>>('movementChart');
+
+  private animalChartInstance: Chart | null = null;
+  private movementChartInstance: Chart | null = null;
+
   readonly tipoLabels = ['Entrada', 'Salida', 'Traslado int.', 'Traslado ext.'];
 
+  constructor() {
+    effect(() => {
+      const slices = this.animalSlices();
+      const canvas = this.animalChart();
+      if (slices.length && canvas?.nativeElement) {
+        this.animalChartInstance?.destroy();
+        this.animalChartInstance = new Chart(canvas.nativeElement, {
+          type: 'doughnut',
+          data: {
+            labels: slices.map(s => s.label),
+            datasets: [{
+              data: slices.map(s => s.count),
+              backgroundColor: slices.map(s => s.color),
+              borderWidth: 0,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
+            },
+          },
+        });
+      }
+    });
+
+    effect(() => {
+      const slices = this.movementSlices();
+      const canvas = this.movementChart();
+      if (slices.length && canvas?.nativeElement) {
+        this.movementChartInstance?.destroy();
+        this.movementChartInstance = new Chart(canvas.nativeElement, {
+          type: 'bar',
+          data: {
+            labels: slices.map(s => s.label),
+            datasets: [{
+              data: slices.map(s => s.count),
+              backgroundColor: slices.map(s => s.color),
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+              x: { ticks: { font: { size: 11 } } },
+            },
+          },
+        });
+      }
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.animalChartInstance?.destroy();
+      this.movementChartInstance?.destroy();
+    });
+  }
+
   async ngOnInit() {
-    await Promise.all([this.loadStats(), this.loadRecentMovements()]);
+    await Promise.all([this.loadStats(), this.loadRecentMovements(), this.loadCharts()]);
     this.loading.set(false);
   }
 
@@ -173,6 +276,59 @@ export class DashboardComponent implements OnInit {
         .sort((a, b) => b.fechaMovimiento.localeCompare(a.fechaMovimiento))
         .slice(0, 5);
       this.recentMovements.set(items);
+    }
+  }
+
+  private async loadCharts() {
+    const [animalResult, movementResult] = await Promise.all([
+      this.loadAnimalsForChart(),
+      this.loadMovementsForChart(),
+    ]);
+    this.animalSlices.set(animalResult);
+    this.movementSlices.set(movementResult);
+  }
+
+  private async loadAnimalsForChart(): Promise<ChartSlice[]> {
+    const colors = ['#22c55e', '#eab308', '#ef4444', '#a855f7', '#64748b'];
+    const labels = ['Activo', 'Vendido', 'Muerto', 'Perdido', 'Sacrificado'];
+
+    try {
+      const r = await firstValueFrom(this.api.getAnimals(1, 500));
+      const counts = [0, 0, 0, 0, 0];
+      for (const a of r.items) {
+        if (a.estado >= 0 && a.estado <= 4) counts[a.estado]++;
+      }
+      return counts.map((c, i) => ({ label: labels[i], count: c, color: colors[i] })).filter(s => s.count > 0);
+    } catch {
+      const all = await this.db.animales.toArray();
+      const active = all.filter(a => !a.deletedAt);
+      const counts = [0, 0, 0, 0, 0];
+      for (const a of active) {
+        if (a.estado >= 0 && a.estado <= 4) counts[a.estado]++;
+      }
+      return counts.map((c, i) => ({ label: labels[i], count: c, color: colors[i] })).filter(s => s.count > 0);
+    }
+  }
+
+  private async loadMovementsForChart(): Promise<ChartSlice[]> {
+    const colors = ['#22c55e', '#ef4444', '#eab308', '#64748b'];
+    const labels = ['Entrada', 'Salida', 'Traslado int.', 'Traslado ext.'];
+
+    try {
+      const r = await firstValueFrom(this.api.getMovimientos(undefined, undefined, 1, 500));
+      const counts = [0, 0, 0, 0];
+      for (const m of r.items) {
+        if (m.tipoMovimiento >= 0 && m.tipoMovimiento <= 3) counts[m.tipoMovimiento]++;
+      }
+      return counts.map((c, i) => ({ label: labels[i], count: c, color: colors[i] })).filter(s => s.count > 0);
+    } catch {
+      const all = await this.db.movimientosAnimal.toArray();
+      const active = all.filter(m => !m.deletedAt);
+      const counts = [0, 0, 0, 0];
+      for (const m of active) {
+        if (m.tipoMovimiento >= 0 && m.tipoMovimiento <= 3) counts[m.tipoMovimiento]++;
+      }
+      return counts.map((c, i) => ({ label: labels[i], count: c, color: colors[i] })).filter(s => s.count > 0);
     }
   }
 }

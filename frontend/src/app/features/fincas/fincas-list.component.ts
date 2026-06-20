@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Finca } from '../../core/models/finca';
 import { exportCsv } from '../../shared/utils/csv-export';
 
@@ -122,6 +123,7 @@ export class FincasListComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   fincas = signal<Finca[]>([]);
   loading = signal(true);
@@ -179,7 +181,9 @@ export class FincasListComponent implements OnInit {
 
   async deleteFinca(id: string) {
     if (!confirm('¿Eliminar esta finca?')) return;
+    const f = this.fincas().find(x => x.id === id);
     await this.offline.remove('fincas', 'finca', id, this.api.deleteFinca(id));
+    await this.log.log('Finca', id, 'Baja', f ? `Nombre: ${f.nombre}` : null);
     this.loadFincas();
   }
 }

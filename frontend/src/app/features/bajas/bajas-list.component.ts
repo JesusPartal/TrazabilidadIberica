@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Baja } from '../../core/models/baja';
 import { CausaBaja } from '../../core/models/baja';
 import { exportCsv } from '../../shared/utils/csv-export';
@@ -124,6 +125,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class BajasListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   items = signal<Baja[]>([]);
   loading = signal(true);
@@ -177,7 +179,9 @@ export class BajasListComponent implements OnInit {
 
   async deleteItem(id: string) {
     if (!confirm('¿Eliminar esta baja?')) return;
+    const item = this.items().find(x => x.id === id);
     await this.offline.remove('bajas', 'baja', id, this.api.deleteBaja(id));
+    await this.log.log('Baja', id, 'Baja', item ? `Animal: ${item.animal?.numeroCrotal ?? item.animalId}` : null);
     this.loadItems();
   }
 

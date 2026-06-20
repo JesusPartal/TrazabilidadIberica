@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Animal } from '../../core/models/animal';
 import type { Veterinario } from '../../core/models/veterinario';
 import type { PagedList } from '../../core/models/paged-list';
@@ -144,6 +145,7 @@ export class TratamientoFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   isEdit = signal(false);
   saving = signal(false);
@@ -223,9 +225,10 @@ export class TratamientoFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('tratamiento', 'tratamientosVeterinarios', 'tratamiento', data, id, id
+      const saved = await this.offline.save('tratamiento', 'tratamientosVeterinarios', 'tratamiento', data, id, id
         ? this.api.updateTratamiento(id, data)
         : this.api.createTratamiento(data));
+      await this.log.log('Tratamiento', saved.id, id ? 'Modificación' : 'Creación', `Medicamento: ${data.nombreMedicamento}`);
       this.router.navigate(['/tratamientos']);
     } catch {
       this.error.set('Error al guardar');

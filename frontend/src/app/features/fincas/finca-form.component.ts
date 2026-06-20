@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 
 @Component({
   selector: 'app-finca-form',
@@ -91,6 +92,7 @@ export class FincaFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   isEdit = signal(false);
   saving = signal(false);
@@ -128,9 +130,10 @@ export class FincaFormComponent implements OnInit {
     const data = this.form.value as any;
 
     try {
-      await this.offline.save('finca', 'fincas', 'finca', data, id, id
+      const saved = await this.offline.save('finca', 'fincas', 'finca', data, id, id
         ? this.api.updateFinca(id, data)
         : this.api.createFinca(data));
+      await this.log.log('Finca', saved.id, id ? 'Modificación' : 'Creación', `Nombre: ${data.nombre}`);
       this.router.navigate(['/farms']);
     } catch {
       this.error.set('Error al guardar');

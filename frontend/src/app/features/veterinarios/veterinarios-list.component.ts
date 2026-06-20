@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Veterinario } from '../../core/models/veterinario';
 import { exportCsv } from '../../shared/utils/csv-export';
 
@@ -113,6 +114,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class VeterinariosListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   items = signal<Veterinario[]>([]);
   loading = signal(true);
@@ -164,7 +166,9 @@ export class VeterinariosListComponent implements OnInit {
 
   async deleteItem(id: string) {
     if (!confirm('¿Eliminar este veterinario?')) return;
+    const item = this.items().find(x => x.id === id);
     await this.offline.remove('veterinarios', 'veterinario', id, this.api.deleteVeterinario(id));
+    await this.log.log('Veterinario', id, 'Baja', item ? `Nombre: ${item.nombreCompleto}` : null);
     this.loadItems();
   }
 }

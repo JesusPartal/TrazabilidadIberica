@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Ganadero } from '../../core/models/ganadero';
 import { exportCsv } from '../../shared/utils/csv-export';
 
@@ -115,6 +116,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class GanaderosListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   items = signal<Ganadero[]>([]);
   loading = signal(true);
@@ -167,7 +169,9 @@ export class GanaderosListComponent implements OnInit {
 
   async deleteItem(id: string) {
     if (!confirm('¿Eliminar este ganadero?')) return;
+    const item = this.items().find(x => x.id === id);
     await this.offline.remove('ganaderos', 'ganadero', id, this.api.deleteGanadero(id));
+    await this.log.log('Ganadero', id, 'Baja', item ? `Nombre: ${item.nombreRazonSocial}` : null);
     this.loadItems();
   }
 }

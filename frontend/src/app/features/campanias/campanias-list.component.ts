@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { CampaniaMontanera } from '../../core/models/campania-montanera';
 import { EstadoCampania } from '../../core/models/campania-montanera';
 import { exportCsv } from '../../shared/utils/csv-export';
@@ -126,6 +127,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class CampaniasListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   items = signal<CampaniaMontanera[]>([]);
   loading = signal(true);
@@ -181,7 +183,9 @@ export class CampaniasListComponent implements OnInit {
 
   async deleteItem(id: string) {
     if (!confirm('¿Eliminar esta campaña?')) return;
+    const item = this.items().find(x => x.id === id);
     await this.offline.remove('campaniasMontanera', 'campania', id, this.api.deleteCampania(id));
+    await this.log.log('Campaña', id, 'Baja', item ? `Temporada: ${item.temporada}` : null);
     this.loadItems();
   }
 

@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import { EstadoCampania } from '../../core/models/campania-montanera';
 import type { Finca } from '../../core/models/finca';
 import type { PagedList } from '../../core/models/paged-list';
@@ -126,6 +127,7 @@ export class CampaniaFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   protected EstadoCampania = EstadoCampania;
 
@@ -194,9 +196,10 @@ export class CampaniaFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('campania', 'campaniasMontanera', 'campania', data, id, id
+      const saved = await this.offline.save('campania', 'campaniasMontanera', 'campania', data, id, id
         ? this.api.updateCampania(id, data)
         : this.api.createCampania(data));
+      await this.log.log('Campaña', saved.id, id ? 'Modificación' : 'Creación', `Temporada: ${data.temporada}`);
       this.router.navigate(['/campanias']);
     } catch {
       this.error.set('Error al guardar');

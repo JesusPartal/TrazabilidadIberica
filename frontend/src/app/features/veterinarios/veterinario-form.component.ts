@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 
 @Component({
   selector: 'app-veterinario-form',
@@ -81,6 +82,7 @@ export class VeterinarioFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   isEdit = signal(false);
   saving = signal(false);
@@ -122,9 +124,10 @@ export class VeterinarioFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('veterinario', 'veterinarios', 'veterinario', data, id, id
+      const saved = await this.offline.save('veterinario', 'veterinarios', 'veterinario', data, id, id
         ? this.api.updateVeterinario(id, data)
         : this.api.createVeterinario(data));
+      await this.log.log('Veterinario', saved.id, id ? 'Modificación' : 'Creación', `Nombre: ${data.nombreCompleto}`);
       this.router.navigate(['/veterinarios']);
     } catch {
       this.error.set('Error al guardar');

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { TratamientoVeterinario } from '../../core/models/tratamiento-veterinario';
 import { exportCsv } from '../../shared/utils/csv-export';
 
@@ -118,6 +119,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class TratamientosListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   items = signal<TratamientoVeterinario[]>([]);
   loading = signal(true);
@@ -170,7 +172,9 @@ export class TratamientosListComponent implements OnInit {
 
   async deleteItem(id: string) {
     if (!confirm('¿Eliminar este tratamiento?')) return;
+    const item = this.items().find(x => x.id === id);
     await this.offline.remove('tratamientosVeterinarios', 'tratamiento', id, this.api.deleteTratamiento(id));
+    await this.log.log('Tratamiento', id, 'Baja', item ? `Medicamento: ${item.nombreMedicamento}` : null);
     this.loadItems();
   }
 }

@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import { CausaBaja } from '../../core/models/baja';
 import type { Animal } from '../../core/models/animal';
 import type { PagedList } from '../../core/models/paged-list';
@@ -110,6 +111,7 @@ export class BajaFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   protected CausaBaja = CausaBaja;
 
@@ -170,9 +172,10 @@ export class BajaFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('baja', 'bajas', 'baja', data, id, id
+      const saved = await this.offline.save('baja', 'bajas', 'baja', data, id, id
         ? this.api.updateBaja(id, data)
         : this.api.createBaja(data));
+      await this.log.log('Baja', saved.id, id ? 'Modificación' : 'Creación', `Causa: ${CausaBaja[data.causa]}`);
       this.router.navigate(['/bajas']);
     } catch {
       this.error.set('Error al guardar');

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import type { Lote } from '../../core/models/lote';
 import { CategoriaLote } from '../../core/models/lote';
 import { exportCsv } from '../../shared/utils/csv-export';
@@ -128,6 +129,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 export class LotesListComponent implements OnInit {
   private api = inject(ApiService);
   private offline = inject(OfflineDataService);
+  private log = inject(ActivityLogService);
 
   lotes = signal<Lote[]>([]);
   loading = signal(true);
@@ -183,7 +185,9 @@ export class LotesListComponent implements OnInit {
 
   async deleteLote(id: string) {
     if (!confirm('¿Eliminar este lote?')) return;
+    const l = this.lotes().find(x => x.id === id);
     await this.offline.remove('lotes', 'lote', id, this.api.deleteLote(id));
+    await this.log.log('Lote', id, 'Baja', l ? `Código: ${l.codigoLote}` : null);
     this.loadLotes();
   }
 

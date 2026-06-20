@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import { CategoriaLote } from '../../core/models/lote';
 import type { Finca } from '../../core/models/finca';
 import type { PagedList } from '../../core/models/paged-list';
@@ -134,6 +135,7 @@ export class LoteFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   protected CategoriaLote = CategoriaLote;
 
@@ -203,9 +205,10 @@ export class LoteFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('lote', 'lotes', 'lote', data, id, id
+      const saved = await this.offline.save('lote', 'lotes', 'lote', data, id, id
         ? this.api.updateLote(id, data)
         : this.api.createLote(data));
+      await this.log.log('Lote', saved.id, id ? 'Modificación' : 'Creación', `Código: ${data.codigoLote}`);
       this.router.navigate(['/lotes']);
     } catch {
       this.error.set('Error al guardar');

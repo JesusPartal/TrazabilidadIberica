@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
+import { ActivityLogService } from '../../core/services/activity-log.service';
 import { TipoMovimiento } from '../../core/models/movimiento-animal';
 import type { Finca } from '../../core/models/finca';
 import type { Animal } from '../../core/models/animal';
@@ -139,6 +140,7 @@ export class MovimientoFormComponent implements OnInit {
   private offline = inject(OfflineDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private log = inject(ActivityLogService);
 
   protected TipoMovimiento = TipoMovimiento;
 
@@ -213,9 +215,10 @@ export class MovimientoFormComponent implements OnInit {
     } as any;
 
     try {
-      await this.offline.save('movimiento', 'movimientosAnimal', 'movimiento', data, id, id
+      const saved = await this.offline.save('movimiento', 'movimientosAnimal', 'movimiento', data, id, id
         ? this.api.updateMovimiento(id, data)
         : this.api.createMovimiento(data));
+      await this.log.log('Movimiento', saved.id, id ? 'Modificación' : 'Creación', `Tipo: ${TipoMovimiento[data.tipoMovimiento]}`);
       this.router.navigate(['/movements']);
     } catch {
       this.error.set('Error al guardar');

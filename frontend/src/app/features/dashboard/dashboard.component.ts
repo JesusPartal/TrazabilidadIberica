@@ -1,74 +1,178 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
+import { DbService } from '../../core/services/db.service';
+import { MovimientoAnimal, TipoMovimiento } from '../../core/models/movimiento-animal';
+
+interface StatEntry {
+  label: string;
+  route: string;
+  color: string;
+  icon: string;
+  count: number;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   template: `
     <div class="dashboard">
       <header>
         <h1>Trazabilidad Ibérica</h1>
-        <button class="logout" (click)="auth.logout()">Cerrar sesión</button>
+        <span class="user-badge">{{ auth.email() }}</span>
+        <button class="logout" (click)="auth.logout()">Salir</button>
       </header>
 
-      <div class="welcome">
-        <p>Bienvenido, <strong>{{ auth.email() }}</strong></p>
-      </div>
+      <div class="content">
+        @if (loading()) {
+          <div class="loading">Cargando estadísticas...</div>
+        }
 
-      <nav class="grid">
-        <a routerLink="/animals" class="card">
-          <h2>Animales</h2>
-          <p>Gestión de crotales y animales</p>
-        </a>
-        <a routerLink="/farms" class="card">
-          <h2>Fincas</h2>
-          <p>Explotaciones y fincas</p>
-        </a>
-        <a routerLink="/lotes" class="card">
-          <h2>Lotes</h2>
-          <p>Agrupaciones de animales</p>
-        </a>
-        <a routerLink="/movements" class="card">
-          <h2>Movimientos</h2>
-          <p>Entradas y salidas</p>
-        </a>
-        <a routerLink="/ganaderos" class="card">
-          <h2>Ganaderos</h2>
-          <p>Titulares de explotaciones</p>
-        </a>
-        <a routerLink="/veterinarios" class="card">
-          <h2>Veterinarios</h2>
-          <p>Profesionales veterinarios</p>
-        </a>
-        <a routerLink="/bajas" class="card">
-          <h2>Bajas</h2>
-          <p>Registro de bajas de animales</p>
-        </a>
-        <a routerLink="/campanias" class="card">
-          <h2>Campañas</h2>
-          <p>Campañas de montanera</p>
-        </a>
-        <a routerLink="/tratamientos" class="card">
-          <h2>Tratamientos</h2>
-          <p>Tratamientos veterinarios</p>
-        </a>
-      </nav>
+        <section class="stats">
+          @for (s of stats(); track s.label) {
+            <a [routerLink]="s.route" class="stat-card" [style.borderLeftColor]="s.color">
+              <span class="stat-icon">{{ s.icon }}</span>
+              <span class="stat-count">{{ s.count }}</span>
+              <span class="stat-label">{{ s.label }}</span>
+            </a>
+          }
+        </section>
+
+        @if (!loading() && recentMovements().length > 0) {
+          <section class="recent">
+            <h2>Últimos movimientos</h2>
+            <div class="movement-list">
+              @for (m of recentMovements(); track m.id) {
+                <div class="movement-row">
+                  <span class="movement-type" [class.badge-green]="m.tipoMovimiento === 0" [class.badge-red]="m.tipoMovimiento === 1" [class.badge-blue]="m.tipoMovimiento >= 2">
+                    {{ tipoLabels[m.tipoMovimiento] }}
+                  </span>
+                  <span class="movement-detail">{{ m.animal?.numeroCrotal ?? m.animalId }}</span>
+                  <span class="movement-date">{{ m.fechaMovimiento | date:'dd/MM/yyyy' }}</span>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <nav class="grid">
+          <a routerLink="/animals" class="card"><h3>Animales</h3><p>Gestión de crotales y animales</p></a>
+          <a routerLink="/farms" class="card"><h3>Fincas</h3><p>Explotaciones y fincas</p></a>
+          <a routerLink="/lotes" class="card"><h3>Lotes</h3><p>Agrupaciones de animales</p></a>
+          <a routerLink="/movements" class="card"><h3>Movimientos</h3><p>Entradas y salidas</p></a>
+          <a routerLink="/ganaderos" class="card"><h3>Ganaderos</h3><p>Titulares de explotaciones</p></a>
+          <a routerLink="/veterinarios" class="card"><h3>Veterinarios</h3><p>Profesionales veterinarios</p></a>
+          <a routerLink="/bajas" class="card"><h3>Bajas</h3><p>Registro de bajas de animales</p></a>
+          <a routerLink="/campanias" class="card"><h3>Campañas</h3><p>Campañas de montanera</p></a>
+          <a routerLink="/tratamientos" class="card"><h3>Tratamientos</h3><p>Tratamientos veterinarios</p></a>
+        </nav>
+      </div>
     </div>
   `,
   styles: [`
-    header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #2563eb; color: white; }
-    h1 { font-size: 1.25rem; }
-    .logout { background: transparent; color: white; border: 1px solid white; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; }
-    .welcome { padding: 2rem; font-size: 1.125rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 0 2rem 2rem; }
-    .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition: box-shadow 0.2s; }
-    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    h2 { font-size: 1.125rem; margin-bottom: 0.25rem; }
-    p { font-size: 0.875rem; color: #666; }
+    .dashboard { min-height: 100vh; background: #f1f5f9; }
+    header { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.5rem; background: #1e3a5f; color: #fff; }
+    h1 { font-size: 1.2rem; margin-right: auto; }
+    .user-badge { font-size: 0.8rem; opacity: 0.75; }
+    .logout { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .logout:hover { background: rgba(255,255,255,0.1); }
+    .content { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+    .loading { text-align: center; padding: 2rem; color: #64748b; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; padding: 1.5rem 0; }
+    .stat-card { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; background: #fff; padding: 0.85rem 0.5rem; border-radius: 10px; border-left: 4px solid #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.07); text-decoration: none; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .stat-icon { font-size: 1.4rem; }
+    .stat-count { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
+    .stat-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+
+    .recent { background: #fff; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+    .recent h2 { font-size: 0.95rem; margin: 0 0 0.75rem; color: #1e293b; }
+    .movement-list { display: flex; flex-direction: column; }
+    .movement-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+    .movement-row:last-child { border-bottom: none; }
+    .movement-type { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .movement-detail { flex: 1; color: #334155; }
+    .movement-date { color: #94a3b8; font-size: 0.8rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; padding-bottom: 2rem; }
+    .card { background: #fff; padding: 1.1rem; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); text-decoration: none; color: inherit; transition: box-shadow 0.2s; }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .card h3 { font-size: 0.95rem; margin: 0 0 0.15rem; }
+    .card p { font-size: 0.75rem; color: #64748b; margin: 0; }
+
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .stat-card { padding: 0.6rem 0.3rem; }
+      .stat-icon { font-size: 1.1rem; }
+      .stat-count { font-size: 1.1rem; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+      .card { padding: 0.9rem; }
+      .card h3 { font-size: 0.85rem; }
+    }
   `],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
+  private api = inject(ApiService);
+  private db = inject(DbService);
+
+  stats = signal<StatEntry[]>([]);
+  recentMovements = signal<MovimientoAnimal[]>([]);
+  loading = signal(true);
+
+  readonly tipoLabels = ['Entrada', 'Salida', 'Traslado int.', 'Traslado ext.'];
+
+  async ngOnInit() {
+    await Promise.all([this.loadStats(), this.loadRecentMovements()]);
+    this.loading.set(false);
+  }
+
+  private async loadStats() {
+    const configs = [
+      { label: 'Animales', route: '/animals', color: '#2563eb', icon: '🐖', api: () => this.api.getAnimals(1, 1), db: () => this.db.animales.count() },
+      { label: 'Fincas', route: '/farms', color: '#059669', icon: '🏘', api: () => this.api.getFincas(undefined, 1, 1), db: () => this.db.fincas.count() },
+      { label: 'Lotes', route: '/lotes', color: '#d97706', icon: '📦', api: () => this.api.getLotes(undefined, 1, 1), db: () => this.db.lotes.count() },
+      { label: 'Ganaderos', route: '/ganaderos', color: '#7c3aed', icon: '👤', api: () => this.api.getGanaderos(1, 1), db: () => this.db.ganaderos.count() },
+      { label: 'Veterinarios', route: '/veterinarios', color: '#0891b2', icon: '⚕', api: () => this.api.getVeterinarios(1, 1), db: () => this.db.veterinarios.count() },
+      { label: 'Movimientos', route: '/movements', color: '#dc2626', icon: '🔄', api: () => this.api.getMovimientos(undefined, undefined, 1, 1), db: () => this.db.movimientosAnimal.count() },
+      { label: 'Bajas', route: '/bajas', color: '#64748b', icon: '📋', api: () => this.api.getBajas(1, 1), db: () => this.db.bajas.count() },
+      { label: 'Campañas', route: '/campanias', color: '#16a34a', icon: '🌿', api: () => this.api.getCampanias(1, 1), db: () => this.db.campaniasMontanera.count() },
+      { label: 'Tratamientos', route: '/tratamientos', color: '#f43f5e', icon: '💊', api: () => this.api.getTratamientos(1, 1), db: () => this.db.tratamientosVeterinarios.count() },
+    ];
+
+    const entries = await Promise.all(
+      configs.map(async (c) => {
+        try {
+          const r = await firstValueFrom(c.api() as any) as any;
+          return { ...c, count: r.totalCount } as StatEntry;
+        } catch {
+          const count = await c.db();
+          return { label: c.label, route: c.route, color: c.color, icon: c.icon, count };
+        }
+      })
+    );
+    this.stats.set(entries);
+  }
+
+  private async loadRecentMovements() {
+    try {
+      const r = await firstValueFrom(this.api.getMovimientos(undefined, undefined, 1, 5));
+      this.recentMovements.set(r.items);
+    } catch {
+      const all = await this.db.movimientosAnimal.toArray();
+      const items = all
+        .filter(i => !i.deletedAt)
+        .sort((a, b) => b.fechaMovimiento.localeCompare(a.fechaMovimiento))
+        .slice(0, 5);
+      this.recentMovements.set(items);
+    }
+  }
 }

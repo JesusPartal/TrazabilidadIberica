@@ -122,6 +122,10 @@ import type { PagedList } from '../../core/models/paged-list';
     .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
     .btn-primary:disabled { opacity: 0.5; cursor: default; }
     .btn-cancel { background: none; border: 1px solid #ccc; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.875rem; text-align: center; }
+    @media (max-width: 640px) {
+      .form-actions { flex-direction: column; }
+      .btn-primary, .btn-cancel { width: 100%; text-align: center; box-sizing: border-box; }
+    }
   `],
 })
 export class LoteFormComponent implements OnInit {

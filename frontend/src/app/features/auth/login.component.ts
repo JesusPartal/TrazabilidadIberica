@@ -50,6 +50,10 @@ import { AuthService } from '../../core/services/auth.service';
     .error { color: #dc2626; font-size: 0.875rem; margin-bottom: 0.5rem; }
     .link { margin-top: 1rem; text-align: center; font-size: 0.875rem; }
     a { color: #2563eb; text-decoration: none; }
+    @media (max-width: 480px) {
+      .card { padding: 1.5rem; margin: 0.5rem; }
+      h1 { font-size: 1.25rem; }
+    }
   `],
 })
 export class LoginComponent {

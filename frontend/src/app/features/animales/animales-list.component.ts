@@ -135,6 +135,12 @@ import { exportCsv } from '../../shared/utils/csv-export';
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
     .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
+    @media (max-width: 640px) {
+      header { flex-wrap: wrap; }
+      .btn-primary, .btn-outline { flex: 1; text-align: center; }
+      .filters { flex-direction: column; }
+      .filters select { width: 100%; }
+    }
   `],
 })
 export class AnimalesListComponent implements OnInit {

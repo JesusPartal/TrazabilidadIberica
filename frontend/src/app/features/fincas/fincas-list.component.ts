@@ -110,6 +110,12 @@ import { exportCsv } from '../../shared/utils/csv-export';
     .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
     .filters select { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; background: white; }
     .offline-banner { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+    @media (max-width: 640px) {
+      header { flex-wrap: wrap; }
+      .btn-primary, .btn-outline { flex: 1; text-align: center; }
+      .filters { flex-direction: column; }
+      .filters select { width: 100%; }
+    }
   `],
 })
 export class FincasListComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, viewChild, ElementRef, effect, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, viewChild, ElementRef, effect, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
@@ -28,6 +28,7 @@ interface ChartSlice {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, DatePipe],
   template: `
     <div class="dashboard">

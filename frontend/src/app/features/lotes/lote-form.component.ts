@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -11,6 +11,7 @@ import type { PagedList } from '../../core/models/paged-list';
 @Component({
   selector: 'app-lote-form',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, ReactiveFormsModule],
   template: `
     <div class="page">

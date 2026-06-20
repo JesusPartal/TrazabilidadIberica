@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { ActivityLogService } from '../../core/services/activity-log.service';
@@ -13,6 +13,7 @@ interface DayGroup {
 @Component({
   selector: 'app-activity-log-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, DatePipe],
   template: `
     <div class="page">

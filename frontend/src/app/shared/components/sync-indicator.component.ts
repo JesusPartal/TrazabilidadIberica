@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { SyncService } from '../../core/services/sync.service';
 
 @Component({
   selector: 'app-sync-indicator',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (sync.pendingCount() > 0 || sync.syncing()) {
       <button class="sync-btn" [class.syncing]="sync.syncing()" (click)="sync.syncNow()" [disabled]="sync.syncing()" title="Sincronizar">

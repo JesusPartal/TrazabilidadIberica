@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
@@ -9,6 +9,7 @@ import { exportCsv } from '../../shared/utils/csv-export';
 @Component({
   selector: 'app-veterinarios-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
     <div class="page">

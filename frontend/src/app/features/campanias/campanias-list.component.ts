@@ -5,6 +5,7 @@ import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
 import type { CampaniaMontanera } from '../../core/models/campania-montanera';
 import { EstadoCampania } from '../../core/models/campania-montanera';
+import { exportCsv } from '../../shared/utils/csv-export';
 
 @Component({
   selector: 'app-campanias-list',
@@ -16,6 +17,7 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
         <a routerLink="/" class="back">←</a>
         <h1>Campañas Montanera</h1>
         <a routerLink="/campanias/new" class="btn-primary">➕ Nueva</a>
+        <button class="btn-outline" (click)="exportCsv()">📥 CSV</button>
       </header>
 
       <div class="filters">
@@ -89,7 +91,9 @@ import { EstadoCampania } from '../../core/models/campania-montanera';
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
+    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; border: none; cursor: pointer; }
+    .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
+    .btn-outline:hover { background: #eff6ff; }
     .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
     .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
     .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
@@ -149,6 +153,17 @@ export class CampaniasListComponent implements OnInit {
   goTo(p: number) {
     this.page.set(p);
     this.loadItems();
+  }
+
+  exportCsv() {
+    exportCsv('campanias.csv', [
+      { label: 'Finca', value: c => c.finca?.nombre ?? '' },
+      { label: 'Temporada', value: c => c.temporada },
+      { label: 'Inicio', value: c => c.fechaInicio },
+      { label: 'Fin', value: c => c.fechaFin ?? '' },
+      { label: 'Estado', value: c => this.estadoLabel(c.estadoCampania) },
+      { label: 'Has.', value: c => c.hectareasUtilizadas },
+    ], this.filteredItems());
   }
 
   async deleteItem(id: string) {

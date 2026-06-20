@@ -5,6 +5,7 @@ import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
 import type { Lote } from '../../core/models/lote';
 import { CategoriaLote } from '../../core/models/lote';
+import { exportCsv } from '../../shared/utils/csv-export';
 
 
 @Component({
@@ -17,6 +18,7 @@ import { CategoriaLote } from '../../core/models/lote';
         <a routerLink="/" class="back">←</a>
         <h1>Lotes</h1>
         <a routerLink="/lotes/new" class="btn-primary">➕ Nuevo</a>
+        <button class="btn-outline" (click)="exportCsv()">📥 CSV</button>
       </header>
 
       <div class="filters">
@@ -91,7 +93,9 @@ import { CategoriaLote } from '../../core/models/lote';
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
+    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; border: none; cursor: pointer; }
+    .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
+    .btn-outline:hover { background: #eff6ff; }
     .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
     .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
     .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
@@ -151,6 +155,17 @@ export class LotesListComponent implements OnInit {
   goTo(p: number) {
     this.page.set(p);
     this.loadLotes();
+  }
+
+  exportCsv() {
+    exportCsv('lotes.csv', [
+      { label: 'Código', value: l => l.codigoLote },
+      { label: 'Finca', value: l => l.finca?.nombre ?? '' },
+      { label: 'Categoría', value: l => this.categoriaLabel(l.categoria) },
+      { label: 'Animales', value: l => l.numeroAnimales },
+      { label: 'Peso Medio (kg)', value: l => l.pesoMedioKg },
+      { label: 'Fecha', value: l => l.fechaFormacion },
+    ], this.filteredItems());
   }
 
   async deleteLote(id: string) {

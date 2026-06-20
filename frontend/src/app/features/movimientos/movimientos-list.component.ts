@@ -5,6 +5,7 @@ import { ApiService } from '../../core/services/api.service';
 import { OfflineDataService } from '../../core/services/offline-data.service';
 import type { MovimientoAnimal } from '../../core/models/movimiento-animal';
 import { TipoMovimiento } from '../../core/models/movimiento-animal';
+import { exportCsv } from '../../shared/utils/csv-export';
 
 @Component({
   selector: 'app-movimientos-list',
@@ -16,6 +17,7 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
         <a routerLink="/" class="back">←</a>
         <h1>Movimientos</h1>
         <a routerLink="/movements/new" class="btn-primary">➕ Nuevo</a>
+        <button class="btn-outline" (click)="exportCsv()">📥 CSV</button>
       </header>
 
       <div class="filters">
@@ -90,7 +92,9 @@ import { TipoMovimiento } from '../../core/models/movimiento-animal';
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
     .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; }
+    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; border: none; cursor: pointer; }
+    .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
+    .btn-outline:hover { background: #eff6ff; }
     .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
     .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
     td.actions { white-space: nowrap; display: flex; gap: 0.25rem; }
@@ -165,6 +169,17 @@ export class MovimientosListComponent implements OnInit {
       [TipoMovimiento.TrasladoExterno]: 'Traslado Externo',
     };
     return map[t] ?? '—';
+  }
+
+  exportCsv() {
+    exportCsv('movimientos.csv', [
+      { label: 'Animal', value: m => m.animal?.numeroCrotal ?? '' },
+      { label: 'Tipo', value: m => this.tipoLabel(m.tipoMovimiento) },
+      { label: 'Origen', value: m => m.fincaOrigen?.nombre ?? '' },
+      { label: 'Destino', value: m => m.fincaDestino?.nombre ?? '' },
+      { label: 'Fecha', value: m => m.fechaMovimiento },
+      { label: 'Guía', value: m => m.numeroGuia ?? '' },
+    ], this.filteredItems());
   }
 
   tipoClass(t: TipoMovimiento): string {

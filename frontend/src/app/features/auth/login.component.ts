@@ -11,7 +11,10 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="page">
       <div class="card">
-        <h1>Iniciar Sesión</h1>
+        <div class="card-header">
+          <span class="crotal" aria-hidden="true"></span>
+          <h1>Iniciar Sesión</h1>
+        </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="field">
@@ -40,20 +43,54 @@ import { AuthService } from '../../core/services/auth.service';
     </div>
   `,
   styles: [`
-    .page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; }
-    .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-    h1 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+    .page {
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 1rem;
+      background: linear-gradient(135deg, var(--color-leather) 0%, var(--color-leather-dark) 100%);
+    }
+    .card {
+      background: var(--color-surface); padding: 2.5rem 2rem 2rem;
+      border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      width: 100%; max-width: 400px;
+    }
+    .card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 2rem; }
+    .crotal {
+      display: inline-block; width: 22px; height: 28px; border-radius: 4px;
+      background: linear-gradient(135deg, var(--color-straw-light), var(--color-straw));
+      border: 1px solid rgba(0,0,0,0.12);
+      position: relative; flex-shrink: 0;
+    }
+    .crotal::after {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 9px; height: 9px; border-radius: 50%;
+      background: radial-gradient(circle, var(--color-earth-dark) 30%, transparent 70%);
+    }
+    h1 { font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; color: var(--color-earth-dark); margin: 0; }
     .field { margin-bottom: 1rem; }
-    label { display: block; margin-bottom: 0.25rem; font-weight: 500; font-size: 0.875rem; }
-    input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-    button { width: 100%; padding: 0.75rem; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+    label { display: block; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.85rem; color: var(--color-cordovan); }
+    input {
+      width: 100%; padding: 0.6rem 0.75rem;
+      border: 1px solid var(--color-leather-dark); border-radius: 6px;
+      font-size: 1rem; font-family: var(--font-body);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(139,111,71,0.15); }
+    button {
+      width: 100%; padding: 0.75rem;
+      background: var(--color-primary); color: white;
+      border: none; border-radius: 6px; font-size: 1rem;
+      font-family: var(--font-body); font-weight: 500;
+      cursor: pointer; transition: background 0.15s;
+    }
+    button:hover:not(:disabled) { background: var(--color-primary-hover); }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .error { color: #dc2626; font-size: 0.875rem; margin-bottom: 0.5rem; }
-    .link { margin-top: 1rem; text-align: center; font-size: 0.875rem; }
-    a { color: #2563eb; text-decoration: none; }
+    .error { color: var(--color-error); font-size: 0.875rem; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: var(--color-error-bg); border-radius: 4px; }
+    .link { margin-top: 1.25rem; text-align: center; font-size: 0.875rem; color: var(--color-text-muted); }
+    a { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+    a:hover { text-decoration: underline; }
     @media (max-width: 480px) {
       .card { padding: 1.5rem; margin: 0.5rem; }
-      h1 { font-size: 1.25rem; }
+      h1 { font-size: 1.2rem; }
     }
   `],
 })

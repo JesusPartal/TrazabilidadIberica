@@ -84,26 +84,26 @@ import { exportCsv } from '../../shared/utils/csv-export';
     .page { max-width: 960px; margin: 0 auto; padding: 1rem; }
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { flex: 1; font-size: 1.25rem; }
-    .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; border: none; cursor: pointer; }
-    .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
-    .btn-outline:hover { background: #eff6ff; }
-    .btn-sm { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
-    .btn-sm.danger { color: #dc2626; border-color: #dc2626; }
-    .loading, .error, .empty { text-align: center; padding: 3rem; color: #666; }
-    .error { color: #dc2626; }
+    .back { text-decoration: none; color: var(--color-primary); font-size: 1.25rem; }
+    .btn-primary { background: var(--color-primary); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; border: none; cursor: pointer; }
+    .btn-outline { background: transparent; color: var(--color-primary); border: 1px solid var(--color-primary); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; cursor: pointer; white-space: nowrap; }
+    .btn-outline:hover { background: var(--color-primary-lighter); }
+    .btn-sm { background: none; border: 1px solid var(--color-border); border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; text-decoration: none; color: inherit; }
+    .btn-sm.danger { color: var(--color-error); border-color: var(--color-error); }
+    .loading, .error, .empty { text-align: center; padding: 3rem; color: var(--color-text-muted); }
+    .error { color: var(--color-error); }
     .empty { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; font-size: 0.875rem; }
-    th { font-weight: 600; color: #666; font-size: 0.75rem; text-transform: uppercase; }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; }
+    th { font-weight: 600; color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; }
     td.actions { white-space: nowrap; display: flex; gap: 0.25rem; }
     .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-    .pagination button { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
+    .pagination button { background: none; border: 1px solid var(--color-border); border-radius: 4px; padding: 0.25rem 0.75rem; cursor: pointer; }
     .pagination button:disabled { opacity: 0.4; cursor: default; }
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
-    .offline-banner { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+    .search-input { flex: 1; min-width: 160px; padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); border-radius: 6px; font-size: 0.875rem; }
+    .offline-banner { background: var(--color-straw-light); color: var(--color-earth-dark); padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
     @media (max-width: 640px) {
       header { flex-wrap: wrap; }
       .btn-primary, .btn-outline { flex: 1; text-align: center; }

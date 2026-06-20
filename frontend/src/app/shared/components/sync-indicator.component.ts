@@ -21,7 +21,7 @@ import { SyncService } from '../../core/services/sync.service';
       position: fixed;
       bottom: 1rem;
       right: 1rem;
-      background: #2563eb;
+      background: var(--color-primary);
       color: white;
       border: none;
       border-radius: 9999px;
@@ -32,8 +32,11 @@ import { SyncService } from '../../core/services/sync.service';
       z-index: 1000;
       transition: background 0.2s;
     }
+    .sync-btn:hover:not(:disabled) {
+      background: var(--color-primary-hover);
+    }
     .sync-btn.syncing {
-      background: #f59e0b;
+      background: var(--color-straw);
       cursor: default;
     }
     .sync-btn:disabled {

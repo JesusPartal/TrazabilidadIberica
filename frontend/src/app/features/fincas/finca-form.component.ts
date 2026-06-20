@@ -71,16 +71,16 @@ import { ActivityLogService } from '../../core/services/activity-log.service';
     .page { max-width: 600px; margin: 0 auto; padding: 1rem; }
     header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
     header h1 { font-size: 1.25rem; }
-    .back { text-decoration: none; color: #2563eb; font-size: 1.25rem; }
-    .error { color: #dc2626; padding: 0.75rem; background: #fee; border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .back { text-decoration: none; color: var(--color-primary); font-size: 1.25rem; }
+    .error { color: var(--color-error); padding: 0.75rem; background: var(--color-error-bg); border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
     .form { display: flex; flex-direction: column; gap: 1rem; }
     label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; font-weight: 500; }
-    input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.875rem; }
-    .field-error { color: #dc2626; font-weight: 400; }
+    input { padding: 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; font-size: 0.875rem; }
+    .field-error { color: var(--color-error); font-weight: 400; }
     .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; }
-    .btn-primary { background: #2563eb; color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+    .btn-primary { background: var(--color-primary); color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
     .btn-primary:disabled { opacity: 0.5; cursor: default; }
-    .btn-cancel { background: none; border: 1px solid #ccc; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.875rem; text-align: center; }
+    .btn-cancel { background: none; border: 1px solid var(--color-border); padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; color: inherit; font-size: 0.875rem; text-align: center; }
     @media (max-width: 640px) {
       .form-actions { flex-direction: column; }
       .btn-primary, .btn-cancel { width: 100%; text-align: center; box-sizing: border-box; }
